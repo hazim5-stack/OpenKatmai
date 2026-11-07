@@ -1,192 +1,258 @@
+<p align="center">
+  <img src="assets/hero.svg" alt="OpenKatmai — system ADB, native ARM64 launches and Quick Settings on DJI RC 2" width="100%" />
+</p>
+
+<p align="center">
+  <a href="docs/SETUP.md"><strong>Start here</strong></a> &nbsp; &middot; &nbsp;
+  <a href="docs/64-BIT-APPS.md">ARM64 guide</a> &nbsp; &middot; &nbsp;
+  <a href="docs/QUICK-SETTINGS.md">Quick Settings</a> &nbsp; &middot; &nbsp;
+  <a href="docs/FINDINGS.md">Research findings</a> &nbsp; &middot; &nbsp;
+  <a href="docs/TROUBLESHOOTING.md">Troubleshooting</a>
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT for original content" src="https://img.shields.io/badge/original_content-MIT-6df4c2?style=flat-square&amp;labelColor=12232e" /></a>
+  <img alt="Device: DJI RC 2 rc331" src="https://img.shields.io/badge/device-DJI_RC_2_rc331-79d5f0?style=flat-square&amp;labelColor=12232e" />
+  <img alt="Verified firmware: V14.00.00.04" src="https://img.shields.io/badge/verified-V14.00.00.04-f1cf91?style=flat-square&amp;labelColor=12232e" />
+</p>
+
 # OpenKatmai
 
-**Working ADB on the DJI RC 2 (KATMAI-IDP / rc331) running the new V14 firmware** —
-no bootloader unlock, no eFuse, no partition writes, fully reversible.
+A documented, working route to **system-UID ADB on DJI RC 2**, with native ARM64
+launch preparation and application shortcuts in the notification panel. Built
+around real-device observations, explicit prerequisites and reversible runtime
+changes.
 
-```text
-adb connect <RC2-IP>:5555
-adb shell id
-# uid=1000(system) gid=1000(system) ... context=u:r:system_app:s0
-```
+> [!IMPORTANT]
+> Verified on **RC 2 / rc331 · Android 11 · V14.00.00.04**. The working shell is
+> **UID 1000 (`system`), not UID 0 root**. Compatibility with another firmware or
+> every Android APK is not implied.
 
-| | Stock state | With OpenKatmai |
-|---|---|---|
-| `adb devices` | `offline` forever | ✅ `device` (USB **and** TCP) |
-| `adb shell` | never connects | ✅ `uid=1000(system)` |
-| Install APKs | ❌ | ✅ `adb install` |
-| System partition | untouched | ✅ untouched (everything lives in `/data`) |
-| Bootloader / eFuse | locked / intact | ✅ stays that way |
+<p align="center">
+  <img src="assets/capabilities.svg" alt="Three building blocks: system ADB, native ARM64 preparation, and Quick Settings shortcuts" width="100%" />
+</p>
 
-> ⚠️ This gives a **system-uid shell, not uid=0 root**. Root research status is
-> documented honestly in [docs/ROOT-STATUS.md](docs/ROOT-STATUS.md).
+## Choose your path
 
----
+<table>
+<tr>
+<td width="33%" valign="top">
+<h3>01 — First connection</h3>
+<p>From internal Download to the factory assistant, Shell and a verified ADB connection.</p>
+<p><a href="docs/SETUP.md"><strong>Follow the setup guide →</strong></a></p>
+</td>
+<td width="33%" valign="top">
+<h3>02 — Run an ARM64 app</h3>
+<p>Install with an explicit ABI, prepare the primary runtime and restore its previous state.</p>
+<p><a href="docs/64-BIT-APPS.md"><strong>Open the ARM64 guide →</strong></a></p>
+</td>
+<td width="33%" valign="top">
+<h3>03 — Build your panel</h3>
+<p>Add app, ARM64 and Shell buttons with a small wrapper you can configure and build.</p>
+<p><a href="docs/QUICK-SETTINGS.md"><strong>Create your shortcuts →</strong></a></p>
+</td>
+</tr>
+</table>
 
-## 1. Supported devices
+## From a fresh connection to your first launch
 
-| Item | Verified value |
-|---|---|
-| Device | DJI RC 2 (screen remote), codename **KATMAI-IDP**, board `rc331` |
-| SoC | Qualcomm QCS5430 (lahaina) |
-| Firmware | **V14.00.00.04** — `DJI/rc331/rc331:11/V14.00.00.04/4:user/test-keys` |
-| Android | 11, test-keys build, **SELinux Permissive** |
-| Key properties | `ro.boot.mp_state=production`, `ro.boot.dbg_cnt=` (empty), `ro.adb.secure=0`, `ro.debuggable=1` |
+<img src="assets/workflow.svg" alt="Stage files → open assistant → activate ADB → install APK → add and test tiles" width="100%" />
 
-Older firmware (e.g. V00.01.12.50) has different weaknesses and is covered by other
-projects — see [Credits](#8-credits).
+### 1. Stage the files
 
-## 2. Why stock ADB shows "offline"
+Use a USB-C **data** cable and select **File transfer / MTP**. Copy the verified
+`adbd-root` payload, `runroot.sh`, `restart.sh`, and your compatible original
+factory-assistant APK into the remote's **internal Download** folder.
 
-DJI's `adbd` carries extra guards that stock ADB cannot pass on this firmware:
+Obtain and hash-check the payload using [Payloads](payloads/README.md).
+`/sdcard/Download` in these commands is internal shared storage; a removable SD
+card is not required. Factory-assistant and ADB payload binaries are not included
+in this repository.
 
-1. **Production gate (pre-AUTH).** In `handle_packet(CNXN)` the daemon checks
-   `ro.boot.mp_state == "production" && ro.boot.dbg_cnt < 1`. When true it returns
-   early — *before* sending `AUTH TOKEN`. The host waits forever: `offline`.
-   (Independently verified by static analysis of the exact signed APEX binary,
-   SHA-256 `b300d9bb…5422`.)
-2. **userlock.** Starting that same binary manually dies with
-   `adb get userlock : locked` plus `Failed to get adbd socket`.
-3. **Auth socket.** The DJI auth flow expects an init-created socket that only
-   exists in the official service environment.
+### 2. Open the assistant and activate ADB
 
-**OpenKatmai does not patch DJI's adbd.** It runs a clean **AOSP `adbd`**
-(`adbd-root`, aarch64) that contains none of these guards — because
-`ro.adb.secure=0`, the handshake completes immediately, no RSA prompt.
+The owner-recorded route on this unit was **Storage → Audio → internal Download
+→ assistant APK → Open → Shell command test**. Picker behavior can vary; the
+[setup guide](docs/SETUP.md#3-openinstall-the-assistant-from-the-remote) explains
+the exact route, Chinese UI labels and gray-file cases.
 
-## 3. Quick start
-
-### Prerequisites (Windows PC)
-- USB-C **data** cable, RC 2 in file-transfer (MTP) mode
-- [platform-tools](https://developer.android.com/tools/releases/platform-tools) (`adb`)
-- Stop any running adb server: `adb kill-server`
-
-### Step 1 — get the payload
-Download `adbd-root` (clean AOSP adbd, aarch64) from the
-[rc2-unlock-toolkit](https://github.com/456erddgr/rc2-unlock-toolkit) repository
-(`app/assets/rc331-root-adb/adbd-root`) and **verify it**:
-
-```powershell
-(Get-FileHash .\adbd-root -Algorithm SHA256).Hash
-# must equal F45E7917C094E6905557057B8F2AF516C658458E675C23EB00DE7FE34CB6B3AB
-```
-
-### Step 2 — stage files on the RC 2
-Copy over MTP into `Download` on the RC 2's internal storage:
-- `adbd-root`
-- `scripts/runroot.sh`
-
-### Step 3 — run once on the RC 2
-Open the factory **开发助手 (Dev Assistant / com.dpad.fuli)** → **shell命令测试**
-(shell test page) and execute:
+On the assistant's Shell page, send this command **once**:
 
 ```sh
 sh /sdcard/Download/runroot.sh
 ```
 
-The script verifies the payload hash (aborts on mismatch), installs it to
-`/data/data/com.dpad.fuli/adbd-r`, stops the stock adbd, opens TCP port 5555 and
-starts the clean adbd in the background.
+The output is written to `Download/runroot-out.txt`. A blank Shell output area
+alone is not a failure. Wait several seconds and check the computer.
 
-### Step 4 — connect from the PC
-
-```powershell
-adb connect <RC2-IP>:5555
-adb devices          # -> device  (USB shows "device" too)
-adb shell id         # -> uid=1000(system)
-```
-
-### Step 5 — stop the auto power-off (important)
-The RC 2 powers itself off when idle (toast "تم الإطفاء"), killing your session:
+### 3. Verify the connection
 
 ```powershell
-adb shell "svc power stayon true"     # stay awake while plugged in
+adb devices -l
+adb -s SERIAL shell id
+# Expected: uid=1000(system) gid=1000(system) ...
 ```
 
-## 4. After every reboot — do I need the on-device shell?
+Replace `SERIAL` with the remote's actual USB serial. USB is sufficient for
+computer-side work. TCP access is also available through the remote's current
+IP on port 5555; see [connection details](docs/SETUP.md#5-confirm-adb-on-the-computer).
 
-| Situation | Shell page needed? |
-|---|---|
-| First activation | ✅ one line: `sh /sdcard/Download/runroot.sh` |
-| After **every** RC 2 reboot | ✅ one line: `sh /sdcard/Download/restart.sh` |
-| Everything else (install apps, files, launcher, logcat) | ❌ all from PC |
-| If full root is achieved one day | ❌ never again (persistence possible) |
+> [!NOTE]
+> The original `runroot.sh` schedules a return to stock ADB after **30 minutes**.
+> `restart.sh` does not schedule a new timer, but does not cancel an older one.
+> After each reboot, run `sh /sdcard/Download/restart.sh` from the assistant.
+> [Understand the activation lifetime →](docs/SETUP.md#activation-lifetime)
 
-Without uid=0 we cannot install a boot-time component with enough privilege,
-so the daemon must be re-started manually once per boot. That single shell line
-is the **only** on-device step — copy it from `Download` via MTP, execute, done.
+### 4. Install and prepare an ARM64 application
 
-## 5. Everyday commands
+Inspect the APK first. Replace the filename and component below with its actual
+values; the example package is a placeholder.
 
 ```powershell
-adb install -r app.apk                     # device is armv7 userspace — arm64-only APKs won't run
-adb push file /data/data/com.dpad.fuli/
-adb pull /sdcard/Download/report.txt .
-adb shell "am start -n fr.neamar.kiss/.MainActivity"
-adb shell "logcat -v brief"
+adb -s SERIAL install --abi arm64-v8a -r .\Example64.apk
+adb -s SERIAL push .\scripts\launch64.sh /data/data/com.dpad.fuli/launch64.sh
+adb -s SERIAL shell chmod 700 /data/data/com.dpad.fuli/launch64.sh
+adb -s SERIAL shell sh /data/data/com.dpad.fuli/launch64.sh com.example.arm64app/com.example.arm64app.MainActivity
 ```
 
-Optional: set a custom launcher as Home (KISS example, verified working):
+Before running the helper, compare its host/device hashes and confirm the target
+package's `primaryCpuAbi=arm64-v8a` as shown in the [complete ARM64 guide](docs/64-BIT-APPS.md).
+The helper checks prerequisites, temporarily starts primary zygote if needed,
+opens the app, and restores the previous primary state. It leaves the running
+secondary runtime and persistent policy unchanged.
+
+```text
+ATTEMPT=1
+APP_READY
+RESTORE_DONE
+```
+
+These markers establish a confirmed foreground launch and restoration, not the
+health of every SDK, service or hardware connection. Apps that create additional
+64-bit processes later may need further runtime handling.
+
+### 5. Put your applications in Quick Settings
+
+Configure and build the included [tile wrapper](src/quick-tiles), install it, and
+register the desired services:
 
 ```powershell
-adb shell "cmd package set-home-activity fr.neamar.kiss/fr.neamar.kiss.MainActivity"
+adb -s SERIAL shell cmd statusbar add-tile org.openkatmai.tiles/.AppTileService
+adb -s SERIAL shell cmd statusbar add-tile org.openkatmai.tiles/.Arm64TileService
+adb -s SERIAL shell cmd statusbar add-tile org.openkatmai.tiles/.ShellTileService
+adb -s SERIAL shell cmd statusbar expand-settings
 ```
 
-Revert to DJI Fly as Home:
+The ordinary tile opens your configured package. The ARM64 tile performs runtime
+preparation before launch. The Shell tile opens the command page through local
+system ADB, with an assistant-menu fallback if that connection is unavailable.
+**Opening Shell does not submit a command.**
 
-```powershell
-adb shell "cmd package set-home-activity dji.go.v5/com.dji.component.application.activity.DJIPureLaunchActivity"
-```
+The wrapper uses `127.0.0.1:5555`, so the clean daemon must already be active even
+if the computer connects only through USB. Follow the [build, installation and
+real-screen verification steps](docs/QUICK-SETTINGS.md); `add-tile` cannot register
+a service before its wrapper APK is installed.
 
-## 6. Repository layout
+## What has actually been established
 
-```
+- **ADB:** USB and TCP connections reached a UID 1000 system shell using a clean
+  AOSP daemon. Stock DJI adbd's production gate is documented separately.
+- **ARM64:** a real ARM64 application installed with an explicit ABI and opened
+  through ActivityManager. Primary zygote was restored to stopped; secondary
+  remained running and policy remained `4`.
+- **Panel shortcuts:** real on-device taps opened application and Shell UIs.
+  The generic source here builds and passes APK signature/alignment checks;
+  its placeholder target is not a separately tested application.
+- **Boundaries:** no UID 0 root, bootloader unlock, eFuse operation or system
+  partition write was needed. Universal app compatibility, complete SDK/hardware
+  operation and automatic boot activation have not been established.
+
+<details>
+<summary><strong>Why developer mode alone does not fix stock ADB</strong></summary>
+
+DJI's stock daemon checks production-state properties before the normal ADB
+handshake. On the recorded build it returns without an authorization token,
+leaving the computer at `offline`. Separate userlock and service-socket checks
+also prevent a simple manually started copy from solving the problem.
+
+OpenKatmai runs the hash-verified clean AOSP `adbd` from the factory assistant's
+system UID. It does not replace or patch the stock system daemon.
+[Read the findings and exact evidence →](docs/FINDINGS.md)
+
+</details>
+
+<details>
+<summary><strong>Why the earlier “32-bit only” conclusion changed</strong></summary>
+
+Minimal fixture APKs produced ABI errors, but those results did not justify a
+universal PackageManager restriction. A real ARM64 APK later installed and
+launched successfully with explicit ABI selection and primary zygote available.
+The earlier blanket conclusion is retracted in the research record.
+[Read the corrected ARM64 findings →](docs/FINDINGS.md#6-64-bit-app-support)
+
+</details>
+
+## Documentation library
+
+- [First-time setup](docs/SETUP.md) — files, Storage/Audio route, assistant, Shell,
+  connection verification, logs and reactivation after reboot.
+- [64-bit applications](docs/64-BIT-APPS.md) — inspect, install, prepare, launch,
+  restore and understand the compatibility limits.
+- [Quick Settings](docs/QUICK-SETTINGS.md) — build and configure the wrapper,
+  register tiles, verify real behavior, update and remove.
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — gray APKs, blank output, offline ADB,
+  the 30-minute timer, ABI errors, helper markers and tile failures.
+- [Findings](docs/FINDINGS.md) — daemon guards, architecture evidence and corrected
+  runtime conclusions.
+- [Root research status](docs/ROOT-STATUS.md) — current capability, experiments and
+  the remaining linker-namespace blocker.
+- [Technical reference](docs/REFERENCE.md) — the preserved original technical
+  overview, device properties, everyday commands, Home configuration and cleanup.
+- [Payload verification](payloads/README.md) — sources and SHA-256 identities.
+
+## Project structure
+
+```text
 OpenKatmai/
-├── README.md                 ← this file
-├── LICENSE                   ← MIT (original content only)
-├── SHA256SUMS.txt            ← payload identities
+├── assets/                 Custom SVG project artwork
+├── docs/                   Setup, ARM64, tiles, evidence and troubleshooting
 ├── scripts/
-│   ├── runroot.sh            ← first activation (hash-guarded)
-│   ├── restart.sh            ← re-activation after reboot
-│   └── sethome.sh            ← optional custom-launcher helper
+│   ├── runroot.sh          First activation + 30-minute restoration timer
+│   ├── restart.sh          Reactivate the existing daemon after reboot
+│   ├── launch64.sh         Bounded ARM64 launch + previous-state restoration
+│   └── sethome.sh          Optional Home configuration helper
 ├── src/
-│   └── agent.c               ← ART attach-agent source (root research)
-├── docs/
-│   ├── FINDINGS.md           ← the three DJI gates, architecture notes
-│   ├── ROOT-STATUS.md        ← uid=0 research: what works, what is blocked and why
-│   └── TROUBLESHOOTING.md
-└── payloads/
-    └── README.md             ← how to fetch + verify binaries (no blobs committed)
+│   ├── quick-tiles/        Generic Android wrapper source and Windows build
+│   └── agent.c             Historical UID 0 research source
+├── payloads/README.md      Obtain and verify payloads; no binary distribution
+└── SHA256SUMS.txt          Payload identities
 ```
 
-## 7. Uninstall (back to 100 % stock)
+## Operating boundaries
 
-1. Reboot the RC 2 — the clean adbd dies, stock adbd returns by itself.
-2. Delete leftovers:
-   ```powershell
-   adb shell "rm /data/data/com.dpad.fuli/adbd-r /data/data/com.dpad.fuli/adbd-p"
-   ```
-   and remove the staged files from `Download`.
-3. `adb shell "svc power stayon false"` restores the default sleep behaviour.
+Keep the unauthenticated clean ADB endpoint on a trusted network. Use the verified
+payload, select the correct device serial, and inspect commands before sending
+them from the assistant. Preserve a known-good working setup before experimenting.
 
-No system/vendor/apex partition is ever modified, so there is nothing to "unflash".
+The documented workflow uses `/data` and internal shared storage. Do not write to
+`/dev/block`, flash partitions, or unlock/re-lock the bootloader as part of this
+procedure. Existing notes about DJI Fly updates and recovery are retained in the
+[technical reference](docs/REFERENCE.md#9-warnings); do not treat an update as a
+required setup step.
 
-## 8. Credits
+To remove the setup, remove custom tiles/APKs and unused helper files **while ADB
+still works**, restore your preferred Home app if changed, then reboot. See the
+[cleanup procedure](docs/REFERENCE.md#7-uninstall-back-to-100--stock).
 
-- **rc2-unlock-toolkit** ([456erddgr](https://github.com/456erddgr/rc2-unlock-toolkit)) —
-  source of the `adbd-root` payload and the capability-bridge design used in root research.
-- Independent RC 2 research record — static analysis of the exact v07/V14 APEX `adbd`,
-  the production-gate disassembly, and the patch tool (`patch_cnxn_gate.py`).
-- **dji-adb** ([Dr-Muh](https://github.com/Dr-Muh/dji-adb)) — direct-USB handshake
-  experiments that confirmed the pre-AUTH silence on this unit.
-- DJI, DJI RC 2 and DJI Fly are trademarks of SZ DJI Technology Co., Ltd.
-  This project is independent security research on a privately owned device,
-  not affiliated with or endorsed by DJI.
+## Credits
 
-## 9. Warnings
+- [rc2-unlock-toolkit](https://github.com/456erddgr/rc2-unlock-toolkit) — source of
+  the clean AOSP payload and earlier capability-bridge research.
+- [dji-adb](https://github.com/Dr-Muh/dji-adb) — direct-USB handshake experiments.
+- Independent RC 2 research — exact-binary analysis, production-gate evidence and
+  real-device runtime validation.
 
-- **Do not update DJI Fly** after modifying the runtime environment (documented risk
-  of the device dropping to fastboot after a Fly update).
-- **Never re-lock the bootloader** if you ever unlock it — DJI's chain-of-trust
-  check bricks the unit on re-lock.
-- **Never write to `/dev/block`.** All work here lives in `/data` and `/sdcard`.
-- The adb shell runs as `system` — powerful, not root. Treat it with the same care.
+Original project content is available under the [MIT License](LICENSE). DJI
+binaries are not redistributed. DJI, DJI RC 2 and DJI Fly are trademarks of SZ DJI
+Technology Co., Ltd. OpenKatmai is independent research and is not affiliated
+with or endorsed by DJI.

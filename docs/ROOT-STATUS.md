@@ -88,5 +88,8 @@ material in case a writable, namespace-permitted path is ever found
 - No partition writes, no `fastboot flash`, no eFuse, no bootloader change.
 - system_server crashes during agent experiments only trigger the normal
   Android runtime restart — the device recovers by itself (observed twice).
-- Every binary pushed to the device is hash-verified on-device before use;
-  the run scripts abort on mismatch.
+- The initial activation script verifies the installed daemon hash and aborts
+  on mismatch. The existing restart script reuses that file and does not perform
+  a fresh hash check; verify the installed payload again if its integrity is in
+  doubt. The generic launch helper's deployment guide also requires comparing
+  host/device hashes.

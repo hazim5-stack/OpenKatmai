@@ -24,6 +24,11 @@ PowerShell verification:
 
 ## DJI binaries (never fetch from here, never commit)
 
+The compatible factory-assistant APK (`com.dpad.fuli`) is also not distributed
+here. See [First-time setup](../docs/SETUP.md) for the locally inspected version,
+hash and the owner's Storage → Audio → Download installation route. A renamed
+third-party APK is not a replacement for the original signed assistant.
+
 The stock `adbd` and the single-instruction CNXN-gate-bypass derivative are
 DJI proprietary / derivative works. They are referenced by hash only for
 reproducibility and must not be redistributed.

@@ -102,7 +102,49 @@ Note: `settings put` fails with an NPE from this shell (the adbd runs as
 uid 1000 without a package name, `ContentProvider.getCallingPackage` throws).
 Use `svc …` / `cmd …` / `am …` alternatives instead.
 
-## 6. 64-bit app support: zygote works, PackageManager does not
+## 6. 64-bit app support
+
+### 2026-11-08 correction from a real ARM64 application
+
+The earlier conclusion that V14 cannot install or launch any ARM64 Android app is
+**RETRACTED**. It was broader than the minimal-test results below justify.
+
+A real application containing 52 ARM64 native libraries installed successfully
+with explicit `--abi arm64-v8a`. Package readback confirmed
+`primaryCpuAbi=arm64-v8a` and `secondaryCpuAbi=null`. This contradicts a blanket
+PackageManager ARM32-only rule. Its private application identity is intentionally
+omitted; examples in this repository use generic package/component placeholders.
+
+A bounded live test started primary `zygote` while leaving the running secondary
+zygote and `persist.dji.zygote_policy=4` unchanged. The first test failed with
+`ZygoteStartFailedEx: IOException: Broken pipe`. A second bounded test with the
+same application and primary zygote running produced an ActivityManager-managed
+COLD launch in about 1.94 seconds. A repeated start reached the existing instance.
+Foreground activity readback and an actual screen capture confirmed the app UI.
+The earlier broken pipe is consistent with stale connection state, but its cause
+has not been proved.
+
+The test restored primary zygote to `stopped`, secondary remained `running`, and
+policy remained `4`; separate readback confirmed these values. The app UI remained
+visible after restoration. Hardware connectivity, all SDK features, background
+multiprocess behavior and reboot persistence were not established. No framework,
+firmware, boot configuration, or persistent policy was changed.
+
+A later on-device Quick Settings tap cold-launched the ARM64 app through a fixed
+local-system-ADB helper. The final state was again primary stopped, secondary
+running, policy 4 and no helper lock. A repeated helper call reported successful
+launch and restoration. Separate Shell tile testing confirmed direct entry into
+`com.dpad.fuli/.ShellCommandActivity`, including a second tap. No command was
+submitted through the Shell UI by the tile.
+
+The generalized source and instructions are now provided in
+[64-bit apps](64-BIT-APPS.md), [Quick Settings](QUICK-SETTINGS.md),
+[`launch64.sh`](../scripts/launch64.sh), and
+[`src/quick-tiles`](../src/quick-tiles). The generalized template has been compiled
+and verified locally; this is not a claim that its placeholder target or every
+possible APK was tested on the remote.
+
+### Earlier minimal tests and policy observations (historical)
 
 DJI ships an init policy in `/system/etc/init/hw/init.rc`:
 
@@ -120,11 +162,12 @@ Live results on this unit:
 
 - `setprop ctl.start zygote` starts the 64-bit zygote cleanly
   (`init.svc.zygote=running`, `/dev/socket/zygote` appears, system stable,
-  only ~14 MB extra RSS observed) — so the **kernel, linker64 and 64-bit ART
-  are fully functional** (a direct `app_process64` Java test also returns
+  only ~14 MB extra RSS observed) — providing evidence that the **kernel,
+  linker64 and 64-bit ART can execute the tested code** (a direct `app_process64` Java test also returns
   `is64Bit=true`).
-- **But PackageManager on V14 is built 32-bit-only.** Controlled tests with
-  three variants of the same minimal APK:
+- Earlier minimal APK tests produced the following results. Their interpretation
+  as proof that PackageManager is universally 32-bit-only is retracted; the
+  fixture construction and differences from the real APK remain to be audited:
 
   | APK variant | `pm install` | result |
   |---|---|---|
@@ -133,16 +176,15 @@ Live results on this unit:
   | `lib/armeabi-v7a/libdummy.so` | Success | runs, `os.arch=armv8l` |
   | no native libs at all | Success | **`primaryCpuAbi=armeabi-v7a`**, runs 32-bit |
 
-- `persist.dji.zygote_policy` (tested `0` and `4`) does **not** influence the
-  PackageManager rejection — the ABI lock is compiled into the framework, not
-  driven by the property.
+- `persist.dji.zygote_policy` (tested `0` and `4`) did not change those minimal
+  fixture outcomes. That does not prove a universal compiled-in ABI prohibition.
 
-**Conclusion:** starting the 64-bit zygote is possible but gains nothing for
-installed apps on V14 — every app, even a JNI-free one, is assigned
-`armeabi-v7a`. The only 64-bit execution path is bypassing the package system
-entirely with `app_process64` (proven working), which suits tools/services,
-not AMS-managed apps. Enabling real arm64 apps would require framework-level
-changes (out of scope for the no-flash constraint of this project).
+**Current conclusion:** both direct 64-bit Java execution and an AMS-managed
+ARM64 application UI launch have been observed on this firmware. Installation
+requires the correct ABI selection; process creation requires a running primary
+zygote. A framework modification has not been shown necessary. The documented
+per-launch workflow is bounded and does not establish universal app, service or
+hardware compatibility.
 
 ## 5. MTP quirk worth knowing
 

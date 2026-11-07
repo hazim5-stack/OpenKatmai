@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="560" viewBox="0 0 1280 560" role="img" aria-labelledby="title desc">
+  <title id="title">OpenKatmai — a clearer path into DJI RC 2</title>
+  <desc id="desc">A dark technical project banner with a vector remote controller, system ADB, ARM64 runtime and Quick Settings tiles.</desc>
+  <defs>
+    <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#08151d"/><stop offset="1" stop-color="#101d2a"/></linearGradient>
+    <linearGradient id="accent" x2="1" y2="1"><stop stop-color="#6df4c2"/><stop offset="1" stop-color="#48bfe3"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#37d8ac" stop-opacity=".16"/><stop offset="1" stop-color="#37d8ac" stop-opacity="0"/></radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8db2bc" stroke-opacity=".055"/></pattern>
+  </defs>
+  <rect width="1280" height="560" rx="24" fill="url(#bg)"/>
+  <rect width="1280" height="560" rx="24" fill="url(#grid)"/>
+  <ellipse cx="1030" cy="220" rx="350" ry="320" fill="url(#glow)"/>
+  <path d="M32 1H1248" stroke="#98d7c2" stroke-opacity=".2"/>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <g transform="translate(64 58)">
+      <rect width="36" height="36" rx="10" fill="url(#accent)"/>
+      <path d="M10 10v16m0-8 13-8m-13 8 13 8" fill="none" stroke="#09202a" stroke-width="3" stroke-linecap="round"/>
+      <text x="50" y="24" fill="#b6d2d9" font-size="14" font-weight="600" letter-spacing="3">OPEN SYSTEMS · DEVICE RESEARCH</text>
+    </g>
+    <text x="60" y="195" fill="#f3faf8" font-size="82" font-weight="700" letter-spacing="-4">OpenKatmai</text>
+    <text x="64" y="244" fill="#6df4c2" font-size="25" font-weight="500">A clearer path into DJI RC 2.</text>
+    <text x="64" y="296" fill="#a8bec8" font-size="18">System ADB. Native ARM64 launches.</text>
+    <text x="64" y="325" fill="#a8bec8" font-size="18">Your applications, one swipe away.</text>
+    <g transform="translate(64 369)" font-family="Consolas,monospace" font-size="12">
+      <rect width="115" height="34" rx="8" fill="#102b2c" stroke="#2b5c50"/><text x="17" y="22" fill="#82e6c3">UID 1000</text>
+      <rect x="127" width="139" height="34" rx="8" fill="#112432" stroke="#2b4557"/><text x="144" y="22" fill="#b1d7ea">V14.00.00.04</text>
+      <rect x="278" width="137" height="34" rx="8" fill="#112432" stroke="#2b4557"/><text x="295" y="22" fill="#b1d7ea">ANDROID 11</text>
+    </g>
+    <path d="M64 455H1216" stroke="#2a3c49"/>
+    <text x="64" y="498" fill="#8da8b7" font-size="13" letter-spacing="1.4">NO BOOTLOADER UNLOCK</text>
+    <circle cx="298" cy="493" r="2" fill="#4c6979"/>
+    <text x="318" y="498" fill="#8da8b7" font-size="13" letter-spacing="1.4">NO PARTITION WRITES</text>
+    <circle cx="536" cy="493" r="2" fill="#4c6979"/>
+    <text x="556" y="498" fill="#8da8b7" font-size="13" letter-spacing="1.4">EVIDENCE FIRST</text>
+    <text x="1074" y="498" fill="#587787" font-size="12" font-family="Consolas,monospace">rc331 / KATMAI</text>
+  </g>
+  <g transform="translate(765 65)">
+    <path d="M88 77V45m276 32V45" stroke="#597583" stroke-width="16" stroke-linecap="round"/>
+    <rect x="30" y="80" width="390" height="260" rx="42" fill="#132a36" stroke="#38505e" stroke-width="2"/>
+    <path d="M66 318v24c0 21 33 23 43 0m231-24v24c0 21 33 23 43 0" fill="#142a35" stroke="#38505e" stroke-width="2"/>
+    <rect x="97" y="112" width="256" height="163" rx="12" fill="#07151d" stroke="#37545c"/>
+    <rect x="110" y="125" width="230" height="24" rx="4" fill="#142e38"/>
+    <g font-family="Consolas,monospace" font-size="10">
+      <circle cx="122" cy="137" r="3" fill="#6df4c2"/><text x="134" y="141" fill="#9bc5cc">system connection</text>
+      <text x="115" y="178" fill="#6df4c2">$ adb shell id</text>
+      <text x="115" y="199" fill="#d7e8eb">uid=1000(system)</text>
+      <text x="115" y="232" fill="#6df4c2">$ launch64.sh package/activity</text>
+      <text x="115" y="253" fill="#91b4c0">APP_READY  RESTORE_DONE</text>
+    </g>
+    <g fill="#0a1c27" stroke="#526c78" stroke-width="2">
+      <circle cx="62" cy="160" r="20"/><circle cx="389" cy="160" r="20"/>
+      <circle cx="62" cy="160" r="8"/><circle cx="389" cy="160" r="8"/>
+    </g>
+    <g transform="translate(133 292)">
+      <rect width="43" height="27" rx="7" fill="#6df4c2"/>
+      <path d="m12 8 6 6-6 6m12 0h8" fill="none" stroke="#09212c" stroke-width="2"/>
+      <rect x="54" width="43" height="27" rx="7" fill="#203f4e"/>
+      <path d="M65 300" stroke="none"/>
+      <text x="62" y="18" font-family="Consolas,monospace" font-size="12" fill="#9dd9e4">64</text>
+      <rect x="108" width="43" height="27" rx="7" fill="#203f4e"/>
+      <g fill="#a5c9d6"><rect x="119" y="7" width="8" height="6"/><rect x="130" y="7" width="8" height="6"/><rect x="119" y="16" width="8" height="6"/><rect x="130" y="16" width="8" height="6"/></g>
+    </g>
+    <rect x="269" y="46" width="160" height="28" rx="14" fill="#17392f" stroke="#39745b"/>
+    <circle cx="285" cy="60" r="3" fill="#6df4c2"/>
+    <text x="296" y="64" font-family="Segoe UI,Arial,sans-serif" font-size="11" fill="#9de8c6" letter-spacing="1">DEVICE-VERIFIED</text>
+  </g>
+</svg>

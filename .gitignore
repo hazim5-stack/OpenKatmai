@@ -3,6 +3,9 @@ src/*.so
 src/*.o
 out/
 build/
+*.apk
+*.keystore
+*.jks
 
 # Payloads must be fetched and verified, never committed
 payloads/adbd-root

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="210" viewBox="0 0 1280 210" role="img" aria-labelledby="title desc">
+  <title id="title">The setup path</title>
+  <desc id="desc">Stage files in internal Download, open the factory assistant through Storage and Audio, activate ADB from Shell, install your APK, then add tiles and verify the screen.</desc>
+  <rect x="1" y="1" width="1278" height="208" rx="18" fill="#0d1b25" stroke="#2a414d"/>
+  <path d="M104 63H1172" stroke="#31515c" stroke-width="2"/>
+  <g font-family="Segoe UI,Arial,sans-serif" text-anchor="middle">
+    <g transform="translate(132)"><circle cy="63" r="20" fill="#173e36" stroke="#6df4c2"/><text y="69" fill="#8df1cc" font-size="16">1</text><text y="119" fill="#eef7f5" font-size="20" font-weight="600">Stage files</text><text y="153" fill="#92adba" font-size="14">Internal Download</text></g>
+    <g transform="translate(386)"><circle cy="63" r="20" fill="#173e36" stroke="#6df4c2"/><text y="69" fill="#8df1cc" font-size="16">2</text><text y="119" fill="#eef7f5" font-size="20" font-weight="600">Open assistant</text><text y="153" fill="#92adba" font-size="14">Storage → Audio</text></g>
+    <g transform="translate(640)"><circle cy="63" r="20" fill="#173e36" stroke="#6df4c2"/><text y="69" fill="#8df1cc" font-size="16">3</text><text y="119" fill="#eef7f5" font-size="20" font-weight="600">Activate ADB</text><text y="153" fill="#92adba" font-size="14">Shell → verify UID 1000</text></g>
+    <g transform="translate(894)"><circle cy="63" r="20" fill="#183744" stroke="#79d5f0"/><text y="69" fill="#79d5f0" font-size="16">4</text><text y="119" fill="#eef7f5" font-size="20" font-weight="600">Install your APK</text><text y="153" fill="#92adba" font-size="14">Select the correct ABI</text></g>
+    <g transform="translate(1148)"><circle cy="63" r="20" fill="#3b3327" stroke="#f1cf91"/><text y="69" fill="#f1cf91" font-size="16">5</text><text y="119" fill="#eef7f5" font-size="20" font-weight="600">Add tiles</text><text y="153" fill="#92adba" font-size="14">Tap → inspect the real UI</text></g>
+  </g>
+</svg>

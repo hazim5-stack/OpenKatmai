@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="240" viewBox="0 0 1280 240" role="img" aria-labelledby="title desc">
+  <title id="title">Three practical building blocks</title>
+  <desc id="desc">System ADB over USB and TCP, native ARM64 runtime preparation, and application shortcuts in Quick Settings.</desc>
+  <g font-family="Segoe UI,Arial,sans-serif">
+    <g>
+      <rect x="1" y="1" width="412" height="228" rx="18" fill="#101f2a" stroke="#2a414d"/>
+      <rect x="25" y="25" width="44" height="44" rx="12" fill="#173e36"/>
+      <path d="m38 37 9 10-9 10m16 0h7" fill="none" stroke="#6df4c2" stroke-width="2.5"/>
+      <text x="87" y="52" fill="#7596a7" font-size="12" letter-spacing="2">01 / CONNECT</text>
+      <text x="25" y="109" fill="#f1f7f7" font-size="27" font-weight="600">System ADB</text>
+      <text x="25" y="145" fill="#a8bec8" font-size="16">A working UID 1000 connection.</text>
+      <text x="25" y="172" fill="#a8bec8" font-size="16">USB or TCP, with recorded evidence.</text>
+      <text x="25" y="207" fill="#6df4c2" font-size="12" font-family="Consolas,monospace">system access · not UID 0 root</text>
+    </g>
+    <g transform="translate(433)">
+      <rect x="1" y="1" width="412" height="228" rx="18" fill="#101f2a" stroke="#2a414d"/>
+      <rect x="25" y="25" width="44" height="44" rx="12" fill="#183744"/>
+      <text x="32" y="54" fill="#79d5f0" font-size="21" font-weight="600">64</text>
+      <text x="87" y="52" fill="#7596a7" font-size="12" letter-spacing="2">02 / PREPARE</text>
+      <text x="25" y="109" fill="#f1f7f7" font-size="27" font-weight="600">Native ARM64</text>
+      <text x="25" y="145" fill="#a8bec8" font-size="16">Explicit ABI. Bounded zygote startup.</text>
+      <text x="25" y="172" fill="#a8bec8" font-size="16">Restore the previous runtime state.</text>
+      <text x="25" y="207" fill="#79d5f0" font-size="12" font-family="Consolas,monospace">per-launch helper · no emulation</text>
+    </g>
+    <g transform="translate(866)">
+      <rect x="1" y="1" width="412" height="228" rx="18" fill="#101f2a" stroke="#2a414d"/>
+      <rect x="25" y="25" width="44" height="44" rx="12" fill="#3b3327"/>
+      <g fill="#f1cf91"><rect x="36" y="36" width="8" height="8" rx="1"/><rect x="49" y="36" width="8" height="8" rx="1"/><rect x="36" y="49" width="8" height="8" rx="1"/><rect x="49" y="49" width="8" height="8" rx="1"/></g>
+      <text x="87" y="52" fill="#7596a7" font-size="12" letter-spacing="2">03 / OPEN</text>
+      <text x="25" y="109" fill="#f1f7f7" font-size="27" font-weight="600">Quick Settings</text>
+      <text x="25" y="145" fill="#a8bec8" font-size="16">Application and Shell shortcuts.</text>
+      <text x="25" y="172" fill="#a8bec8" font-size="16">Reusable source. Your own build.</text>
+      <text x="25" y="207" fill="#f1cf91" font-size="12" font-family="Consolas,monospace">one panel · fixed, explicit actions</text>
+    </g>
+  </g>
+</svg>

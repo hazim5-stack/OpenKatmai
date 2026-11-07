@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.openkatmai.tiles" android:versionCode="1" android:versionName="1.0">
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="30" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <!-- Keep this package synchronized with Config.PLAIN_PACKAGE. -->
+  <queries><package android:name="fr.neamar.kiss" /></queries>
+  <application android:label="OpenKatmai Tiles" android:icon="@drawable/ic_tile" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:allowBackup="false">
+    <activity android:name=".BridgeActivity" android:exported="false" android:taskAffinity="org.openkatmai.tiles.bridge" android:excludeFromRecents="true" />
+    <service android:name=".AppTileService" android:label="App" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".Arm64TileService" android:label="ARM64 App" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".ShellTileService" android:label="Shell" android:icon="@drawable/ic_shell" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+  </application>
+</manifest>
