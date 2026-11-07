@@ -1,0 +1,19 @@
+# Payload identities (SHA-256)
+#
+# Binaries are NOT committed to this repository. Fetch them from their
+# original sources and verify against these hashes before use.
+
+# Clean AOSP adbd (aarch64) — the working payload.
+# Source: rc2-unlock-toolkit -> app/assets/rc331-root-adb/adbd-root
+f45e7917c094e6905557057b8f2af516c658458e675c23eb00de7fe34cb6b3ab  adbd-root
+
+# Reference only (do not distribute, DJI proprietary):
+# Stock APEX adbd as read from the RC 2 (V14.00.00.04), identical to the
+# documented v07 payload.
+b300d9bb90f5941fe2952bc9f6dacc30e639a498be4435f59a4ae95134bd5422  adbd-stock-reference
+
+# Reference only (do not distribute, derivative of DJI binary):
+# Stock adbd with the single-instruction CNXN production-gate bypass
+# (patch_cnxn_gate.py). Note: still blocked by the DJI userlock at runtime,
+# which is why OpenKatmai uses adbd-root instead.
+3fceaa1724a77a153c17f725a2e3f3001b0543e31e0830aca0c77d785df9225f  adbd-cnxn-gate-bypass-reference

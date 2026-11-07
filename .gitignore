@@ -1,0 +1,14 @@
+# Local build artifacts
+src/*.so
+src/*.o
+out/
+build/
+
+# Payloads must be fetched and verified, never committed
+payloads/adbd-root
+payloads/*.elf
+payloads/*.bin
+
+# OS noise
+Thumbs.db
+Desktop.ini
