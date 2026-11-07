@@ -1,6 +1,6 @@
 # First-time setup: factory assistant, Shell and working ADB
 
-This guide covers the recorded DJI RC 2 (`rc331`) running **V14.00.00.04**,
+This guide covers the recorded DJI RC 2 (`rc331`) running **v10.00.0800 (2026.07.30)** (Android build `V14.00.00.04`),
 Android 11. It produces a **UID 1000 system shell, not UID 0 root**. It does not
 unlock the bootloader, flash firmware, or modify system partitions. Other
 firmware builds need their own compatibility checks.

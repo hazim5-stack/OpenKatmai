@@ -20,10 +20,10 @@
     <text x="60" y="195" fill="#f3faf8" font-size="82" font-weight="700" letter-spacing="-4">OpenKatmai</text>
     <text x="64" y="244" fill="#6df4c2" font-size="25" font-weight="500">A clearer path into DJI RC 2.</text>
     <text x="64" y="296" fill="#a8bec8" font-size="18">System ADB. Native ARM64 launches.</text>
-    <text x="64" y="325" fill="#a8bec8" font-size="18">Your applications, one swipe away.</text>
+    <text x="64" y="325" fill="#a8bec8" font-size="18">Firmware v10.00.0800 (2026.07.30).</text>
     <g transform="translate(64 369)" font-family="Consolas,monospace" font-size="12">
       <rect width="115" height="34" rx="8" fill="#102b2c" stroke="#2b5c50"/><text x="17" y="22" fill="#82e6c3">UID 1000</text>
-      <rect x="127" width="139" height="34" rx="8" fill="#112432" stroke="#2b4557"/><text x="144" y="22" fill="#b1d7ea">V14.00.00.04</text>
+      <rect x="127" width="139" height="34" rx="8" fill="#112432" stroke="#2b4557"/><text x="144" y="22" fill="#b1d7ea">v10.00.0800</text>
       <rect x="278" width="137" height="34" rx="8" fill="#112432" stroke="#2b4557"/><text x="295" y="22" fill="#b1d7ea">ANDROID 11</text>
     </g>
     <path d="M64 455H1216" stroke="#2a3c49"/>

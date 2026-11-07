@@ -1,7 +1,23 @@
-# Findings — DJI RC 2 (rc331) on firmware V14.00.00.04
+# Findings — DJI RC 2 (rc331) on firmware v10.00.0800 (2026.07.30)
 
 Everything below was observed live on one retail unit and cross-checked against
 the exact signed firmware binaries where noted.
+
+## Firmware identity
+
+Live readback from the connected RC 2 on 2026-11-08 returned:
+
+```text
+dji.prop.external_version = 10.00.08.00
+ro.build.id = V14.00.00.04
+ro.build.display.id = V14.00.00.04 test-keys
+```
+
+The project targets external firmware **v10.00.0800 (2026.07.30)**.
+`V14.00.00.04` is the internal Android build ID of this tested device, not
+the public firmware version. Earlier documentation used that build ID as
+firmware shorthand; this section corrects the naming. Other firmware releases
+require separate compatibility verification.
 
 ## 1. The three DJI guards in stock `adbd`
 
@@ -56,7 +72,7 @@ Patching DJI's binary is a dead end at runtime. The working approach is a
 of the three guards. Because `ro.adb.secure=0`, the connection completes with
 no RSA authorization at all.
 
-## 2. Architecture notes (V14.00.00.04)
+## 2. Architecture notes (v10.00.0800; Android build V14.00.00.04)
 
 | Component | Architecture | Evidence |
 |---|---|---|
@@ -106,7 +122,7 @@ Use `svc …` / `cmd …` / `am …` alternatives instead.
 
 ### 2026-11-08 correction from a real ARM64 application
 
-The earlier conclusion that V14 cannot install or launch any ARM64 Android app is
+The earlier conclusion that this firmware cannot install or launch any ARM64 Android app is
 **RETRACTED**. It was broader than the minimal-test results below justify.
 
 A real application containing 52 ARM64 native libraries installed successfully

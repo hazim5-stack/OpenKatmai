@@ -1,4 +1,4 @@
-# Root (uid=0) research status on V14.00.00.04
+# Root (uid=0) research status on v10.00.0800 (2026.07.30)
 
 Current capability: `uid=1000(system)` shell via clean AOSP adbd.
 This file records, honestly, what was tried for uid=0, what worked, and the
@@ -7,7 +7,7 @@ exact remaining blocker.
 ## What works
 
 - Stock APEX `adbd` exported and hash-matched to the documented v07 payload
-  (`b300d9bb…5422`) — the same binary ships in V14.
+  (`b300d9bb…5422`) — the same binary ships in v10.00.0800.
 - Single-instruction CNXN-gate patch reproduced byte-identical to the
   independently audited artifact (`3fceaa17…225f`) via `patch_cnxn_gate.py`
   (semantic patcher, refuses anything but the exact instruction at
@@ -15,11 +15,11 @@ exact remaining blocker.
 - Runtime proof that the gate patch alone is insufficient (userlock/socket),
   which is why the clean adbd is used instead.
 - `am attach-agent` is **accepted** by ActivityManager (exit 0) and ART
-  attempts the load — the injection channel itself is alive on V14.
+  attempts the load — the injection channel itself is alive on v10.00.0800.
 
 ## The blocker: linker namespace
 
-`system_server` on V14 is a **32-bit** process whose agent loads execute in the
+`system_server` on v10.00.0800 is a **32-bit** process whose agent loads execute in the
 `com_android_art` linker namespace. From `/linkerconfig/ld.config.txt`:
 
 ```text
@@ -40,7 +40,7 @@ for the namespace "com_android_art"                                   # the real
 ```
 
 On the older V00.01.12.50 firmware this attack surface was open (that is how
-rc2-unlock-toolkit bootstraps). On V14 it is closed for `system_server`.
+rc2-unlock-toolkit bootstraps). On v10.00.0800 it is closed for `system_server`.
 App processes (e.g. DJI Fly) do accept agents from their own `apk_data_file`
 directories — but apps run with an empty capability set, so they are useless
 as a privilege bridge.
@@ -58,15 +58,15 @@ $ANDROID_NDK/toolchains/llvm/prebuilt/<host>/bin/armv7a-linux-androideabi30-clan
     -shared -fPIC -O2 -o libagent.so agent.c
 ```
 
-It currently has no loadable path on V14 (see above). It is kept as reference
+It currently has no loadable path on v10.00.0800 (see above). It is kept as reference
 material in case a writable, namespace-permitted path is ever found
 (e.g. a writable APEX overlay, or a future firmware with looser ld.config).
 
-## Ruled out on V14
+## Ruled out on v10.00.0800
 
 | Route | Result |
 |---|---|
-| `djilink` Binder command injection | service **removed** in V14 (`Service djilink: not found`) |
+| `djilink` Binder command injection | service **removed** in v10.00.0800 (`Service djilink: not found`) |
 | Factory/`atfwd`/Qualcomm diag services | none present in `service list` |
 | setuid binaries on stock partitions | none found |
 | `/dji_apk` write as uid 1000 | `root:root drwxrwxr-x` — denied |

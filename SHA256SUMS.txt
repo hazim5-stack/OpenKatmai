@@ -8,7 +8,7 @@
 f45e7917c094e6905557057b8f2af516c658458e675c23eb00de7fe34cb6b3ab  adbd-root
 
 # Reference only (do not distribute, DJI proprietary):
-# Stock APEX adbd as read from the RC 2 (V14.00.00.04), identical to the
+# Stock APEX adbd as read from the RC 2 (v10.00.0800; Android build V14.00.00.04), identical to the
 # documented v07 payload.
 b300d9bb90f5941fe2952bc9f6dacc30e639a498be4435f59a4ae95134bd5422  adbd-stock-reference
 

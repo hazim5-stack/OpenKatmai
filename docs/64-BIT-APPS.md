@@ -1,6 +1,6 @@
 # Installing and launching 64-bit Android apps
 
-Scope: the recorded RC 2 on **V14.00.00.04**, with the working **UID 1000** ADB
+Scope: the recorded RC 2 on **v10.00.0800 (2026.07.30)** (Android build `V14.00.00.04`), with the working **UID 1000** ADB
 connection from [First-time setup](SETUP.md). The successful real-device test
 established that an ARM64 Android application can be installed and launched
 through ActivityManager. It does not establish compatibility with every APK.

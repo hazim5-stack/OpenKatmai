@@ -13,7 +13,7 @@
 <p align="center">
   <a href="LICENSE"><img alt="License: MIT for original content" src="https://img.shields.io/badge/original_content-MIT-6df4c2?style=flat-square&amp;labelColor=12232e" /></a>
   <img alt="Device: DJI RC 2 rc331" src="https://img.shields.io/badge/device-DJI_RC_2_rc331-79d5f0?style=flat-square&amp;labelColor=12232e" />
-  <img alt="Verified firmware: V14.00.00.04" src="https://img.shields.io/badge/verified-V14.00.00.04-f1cf91?style=flat-square&amp;labelColor=12232e" />
+  <img alt="Verified firmware: v10.00.0800 (2026.07.30)" src="https://img.shields.io/badge/verified-v10.00.0800-f1cf91?style=flat-square&amp;labelColor=12232e" />
 </p>
 
 # OpenKatmai
@@ -24,9 +24,16 @@ around real-device observations, explicit prerequisites and reversible runtime
 changes.
 
 > [!IMPORTANT]
-> Verified on **RC 2 / rc331 · Android 11 · V14.00.00.04**. The working shell is
+> This project targets **DJI RC 2 / rc331 firmware v10.00.0800 (2026.07.30)**.
+> Android 11 internal build: **V14.00.00.04**. The working shell is
 > **UID 1000 (`system`), not UID 0 root**. Compatibility with another firmware or
 > every Android APK is not implied.
+
+The connected remote reports `dji.prop.external_version=10.00.08.00`
+(external firmware **v10.00.0800**) and `ro.build.id=V14.00.00.04`
+(internal Android build). These are two identifiers for the same tested device;
+Here, V14 identifies the internal Android build, not the external firmware version.
+Support for other v10 builds has not been established.
 
 <p align="center">
   <img src="assets/capabilities.svg" alt="Three building blocks: system ADB, native ARM64 preparation, and Quick Settings shortcuts" width="100%" />

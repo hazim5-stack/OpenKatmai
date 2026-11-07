@@ -1,7 +1,7 @@
 # Application shortcuts in the notification / Quick Settings panel
 
 The RC 2 panel containing Wi-Fi and Bluetooth accepts Android `TileService`
-components on the recorded V14 build. These are **Quick Settings tiles**, not
+components on the recorded v10.00.0800 (2026.07.30) firmware (Android build `V14.00.00.04`). These are **Quick Settings tiles**, not
 ordinary notification icons. A tile opens an installed app; it does not embed
 that app's interface into System UI or change the default Home application.
 

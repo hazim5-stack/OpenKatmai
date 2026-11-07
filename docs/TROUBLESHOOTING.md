@@ -83,14 +83,14 @@ or use PowerShell for adb commands.
 
 ## `dlopen failed: "...so" is 64-bit instead of 32-bit` (agent work)
 
-`system_server` on V14 is 32-bit. Compile agents with
+`system_server` on v10.00.0800 is 32-bit. Compile agents with
 `armv7a-linux-androideabi30-clang`, not `aarch64`.
 
 ## `... is not accessible for the namespace "com_android_art"`
 
 The linker namespace wall documented in
 [ROOT-STATUS.md](ROOT-STATUS.md#the-blocker-linker-namespace). There is no
-writable permitted path on V14 — the agent cannot be loaded into
+writable permitted path on v10.00.0800 — the agent cannot be loaded into
 system_server, regardless of architecture.
 
 ## Device in fastboot mode after a DJI Fly update

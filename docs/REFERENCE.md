@@ -2,7 +2,7 @@
 
 [Project overview](../README.md) · [First-time setup](SETUP.md) · [ARM64 apps](64-BIT-APPS.md) · [Quick Settings](QUICK-SETTINGS.md)
 
-**Working ADB on the DJI RC 2 (KATMAI-IDP / rc331) running the new V14 firmware** —
+**Working ADB on the DJI RC 2 (KATMAI-IDP / rc331) running firmware v10.00.0800 (2026.07.30)** —
 no bootloader unlock, no eFuse, no partition writes, fully reversible.
 
 ```text
@@ -30,7 +30,8 @@ adb shell id
 |---|---|
 | Device | DJI RC 2 (screen remote), codename **KATMAI-IDP**, board `rc331` |
 | SoC | Qualcomm QCS5430 (lahaina) |
-| Firmware | **V14.00.00.04** — `DJI/rc331/rc331:11/V14.00.00.04/4:user/test-keys` |
+| Firmware | **v10.00.0800 (2026.07.30)** |
+| Android build | **V14.00.00.04** — `DJI/rc331/rc331:11/V14.00.00.04/4:user/test-keys` |
 | Android | 11, test-keys build, **SELinux Permissive** |
 | Key properties | `ro.boot.mp_state=production`, `ro.boot.dbg_cnt=` (empty), `ro.adb.secure=0`, `ro.debuggable=1` |
 
@@ -203,7 +204,7 @@ No system/vendor/apex partition is ever modified, so there is nothing to "unflas
 
 - **rc2-unlock-toolkit** ([456erddgr](https://github.com/456erddgr/rc2-unlock-toolkit)) —
   source of the `adbd-root` payload and the capability-bridge design used in root research.
-- Independent RC 2 research record — static analysis of the exact v07/V14 APEX `adbd`,
+- Independent RC 2 research record — static analysis of the exact APEX `adbd`,
   the production-gate disassembly, and the patch tool (`patch_cnxn_gate.py`).
 - **dji-adb** ([Dr-Muh](https://github.com/Dr-Muh/dji-adb)) — direct-USB handshake
   experiments that confirmed the pre-AUTH silence on this unit.
