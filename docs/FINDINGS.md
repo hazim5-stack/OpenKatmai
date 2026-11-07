@@ -102,6 +102,48 @@ Note: `settings put` fails with an NPE from this shell (the adbd runs as
 uid 1000 without a package name, `ContentProvider.getCallingPackage` throws).
 Use `svc …` / `cmd …` / `am …` alternatives instead.
 
+## 6. 64-bit app support: zygote works, PackageManager does not
+
+DJI ships an init policy in `/system/etc/init/hw/init.rc`:
+
+```text
+on property:sys.boot_completed=1 && property:persist.dji.zygote_policy=2
+    stop zygote_secondary        # 64-bit-only mode
+on property:sys.boot_completed=1 && property:persist.dji.zygote_policy=4
+    stop zygote                  # 32-bit-only mode (shipped default)
+```
+
+Both zygotes start at boot; the trigger then stops one of them. Any policy
+value other than `2`/`4` matches no trigger and would leave both running.
+
+Live results on this unit:
+
+- `setprop ctl.start zygote` starts the 64-bit zygote cleanly
+  (`init.svc.zygote=running`, `/dev/socket/zygote` appears, system stable,
+  only ~14 MB extra RSS observed) — so the **kernel, linker64 and 64-bit ART
+  are fully functional** (a direct `app_process64` Java test also returns
+  `is64Bit=true`).
+- **But PackageManager on V14 is built 32-bit-only.** Controlled tests with
+  three variants of the same minimal APK:
+
+  | APK variant | `pm install` | result |
+  |---|---|---|
+  | `lib/arm64-v8a/libdummy.so` | `INSTALL_FAILED_INTERNAL_ERROR: Error deriving application ABI` | rejected |
+  | same + `--abi arm64-v8a` override | same error | rejected |
+  | `lib/armeabi-v7a/libdummy.so` | Success | runs, `os.arch=armv8l` |
+  | no native libs at all | Success | **`primaryCpuAbi=armeabi-v7a`**, runs 32-bit |
+
+- `persist.dji.zygote_policy` (tested `0` and `4`) does **not** influence the
+  PackageManager rejection — the ABI lock is compiled into the framework, not
+  driven by the property.
+
+**Conclusion:** starting the 64-bit zygote is possible but gains nothing for
+installed apps on V14 — every app, even a JNI-free one, is assigned
+`armeabi-v7a`. The only 64-bit execution path is bypassing the package system
+entirely with `app_process64` (proven working), which suits tools/services,
+not AMS-managed apps. Enabling real arm64 apps would require framework-level
+changes (out of scope for the no-flash constraint of this project).
+
 ## 5. MTP quirk worth knowing
 
 The RC 2 enumerates as `2ca3:1021` with three interfaces:
