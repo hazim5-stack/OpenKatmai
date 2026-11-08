@@ -1,4 +1,4 @@
-# OpenKatmai Toolbox 1.1.1
+# OpenKatmai Toolbox 1.1.2
 
 An optional on-device app manager for **DJI RC 2 firmware v10.00.0800 (2026.07.30)**.
 It uses the existing OpenKatmai local ADB connection as **UID 1000 system**.
@@ -8,7 +8,7 @@ Installing Toolbox alone does not activate ADB or grant full root.
 
 ## Install or update Toolbox
 
-Download [OpenKatmai-Toolbox.apk](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.1/OpenKatmai-Toolbox.apk)
+Download [OpenKatmai-Toolbox.apk](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.2/OpenKatmai-Toolbox.apk)
 and compare it with that release's `SHA256SUMS.txt`. Activate ADB using
 [First-time setup](SETUP.md), then install:
 
@@ -18,7 +18,7 @@ adb -s SERIAL shell am start -n org.openkatmai.toolbox/.MainActivity
 adb -s SERIAL shell cmd statusbar add-tile org.openkatmai.toolbox/.ToolboxTileService
 ```
 
-Replace `SERIAL` with the actual device serial. Version 1.1.1 updates earlier published
+Replace `SERIAL` with the actual device serial. Version 1.1.2 updates earlier published
 Toolbox APKs with the same signing key. Keep `127.0.0.1:5555` active even when your PC
 uses USB, and reactivate OpenKatmai after each remote reboot.
 

@@ -1,6 +1,8 @@
 package org.openkatmai.toolbox;
 
 import java.io.ByteArrayOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -24,10 +26,11 @@ final class LocalAdb implements Closeable {
     LocalAdb() throws IOException {
         try {
             socket.connect(new InetSocketAddress("127.0.0.1", 5555), 2500);
+            socket.setTcpNoDelay(true);
             socket.setSoTimeout(55000);
-            input = new DataInputStream(socket.getInputStream());
-            output = socket.getOutputStream();
-            send(CNXN, 0x01000000, 4096, "host::openkatmai-toolbox\0".getBytes(StandardCharsets.UTF_8));
+            input = new DataInputStream(new BufferedInputStream(socket.getInputStream(), 65536));
+            output = new BufferedOutputStream(socket.getOutputStream(), 65536);
+            send(CNXN, 0x01000000, 262144, "host::openkatmai-toolbox\0".getBytes(StandardCharsets.UTF_8));
             Packet p = receive();
             if (p.command == AUTH) throw new IOException("The local ADB service requires authorization.");
             if (p.command != CNXN) throw new IOException("The local ADB handshake failed.");
@@ -43,11 +46,15 @@ final class LocalAdb implements Closeable {
     }
     /** Raw exec avoids PTY newline conversion when inspecting an APK. Streams to disk. */
     void download(String path, OutputStream target) throws IOException {
+        download(path, target, null);
+    }
+    interface TransferProgress { void update(long bytes); }
+    void download(String path, OutputStream target, TransferProgress progress) throws IOException {
         Actions.downloadPath(path);
         requireSystem();
         int local = stream++;
         send(OPEN, local, 0, ("exec:cat " + Actions.quote(path) + "\0").getBytes(StandardCharsets.UTF_8));
-        long total = 0, deadline = System.nanoTime() + 120000000000L;
+        long total = 0, lastProgress = 0, deadline = System.nanoTime() + 600000000000L;
         while (true) {
             long remaining = (deadline - System.nanoTime()) / 1000000L;
             if (remaining <= 0) throw new IOException("APK read timed out");
@@ -62,9 +69,14 @@ final class LocalAdb implements Closeable {
                 total += p.data.length;
                 if (total > 1073741824L) throw new IOException("APK exceeds 1 GiB inspection limit");
                 target.write(p.data); send(OKAY, local, p.a, new byte[0]);
+                long now = System.nanoTime();
+                if (progress != null && now - lastProgress >= 250000000L) {
+                    progress.update(total); lastProgress = now;
+                }
             } else if (p.command == CLSE) {
                 send(CLSE, local, p.a, new byte[0]);
                 if (total == 0) throw new IOException("APK is empty or cannot be read");
+                if (progress != null) progress.update(total);
                 return;
             } else throw new IOException("Unexpected APK packet");
         }

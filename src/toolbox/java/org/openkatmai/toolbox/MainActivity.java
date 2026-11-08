@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
 public final class MainActivity extends Activity {
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private TextView output, status;
+    private ProgressBar progress;
     private boolean busy, dead;
     private ManagedApps.Apk pendingApk;
     private AlertDialog tilePromptDialog;
@@ -30,7 +31,7 @@ public final class MainActivity extends Activity {
         root.setBackgroundColor(UI.BG);
         LinearLayout nav = UI.page(this);
         nav.addView(UI.title(this, "OpenKatmai"));
-        nav.addView(UI.dim(this, "Toolbox 1.1.1"));
+        nav.addView(UI.dim(this, "Toolbox 1.1.2"));
         button(nav, "Overview", () -> job(Actions::overview, null));
         button(nav, "Apps", () -> job(Actions::apps, this::showApps));
         button(nav, "Download / Install", () -> job(Actions::downloads, this::showApks));
@@ -58,6 +59,9 @@ public final class MainActivity extends Activity {
         content.addView(UI.title(this, "Your RC 2 tools"));
         status = UI.dim(this, "Connecting to OpenKatmai...");
         content.addView(status);
+        progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progress.setMax(100); progress.setVisibility(android.view.View.GONE);
+        content.addView(progress, new LinearLayout.LayoutParams(-1, UI.dp(8)));
         ScrollView scroll = new ScrollView(this);
         output = UI.text(this, "", UI.TEXT, 14);
         output.setTypeface(Typeface.MONOSPACE);
@@ -110,6 +114,8 @@ public final class MainActivity extends Activity {
         if (busy || dead) return;
         busy = true; for (Button b : controls) b.setEnabled(false);
         status.setText("Working...");
+        progress.setIndeterminate(true); progress.setVisibility(android.view.View.VISIBLE);
+        output.setText("Operation in progress...");
         worker.execute(() -> {
             String result; boolean ok;
             try { result = work.run(); ok = true; }
@@ -119,10 +125,24 @@ public final class MainActivity extends Activity {
             runOnUiThread(() -> {
                 if (dead) { if (pendingApk != null) pendingApk.discard(); return; }
                 busy = false; for (Button b : controls) b.setEnabled(true);
+                progress.setVisibility(android.view.View.GONE);
                 status.setText(success ? "OpenKatmai | system ADB | UID 1000" : "Action failed");
                 output.setText(text.isEmpty() ? "No results." : text);
                 if (success && done != null) done.accept(text);
             });
+        });
+    }
+    private void progress(String stage, long done, long total) {
+        runOnUiThread(() -> {
+            if (dead || !busy) return;
+            progress.setIndeterminate(total <= 0);
+            if (total > 0) {
+                int percent = (int)Math.min(100, done * 100 / total);
+                progress.setProgress(percent);
+                status.setText(stage + " - " + percent + "%");
+                output.setText(stage + "\n" + String.format(java.util.Locale.ROOT,
+                    "%.1f / %.1f MiB", done / 1048576.0, total / 1048576.0));
+            } else { status.setText(stage); output.setText(stage + "..."); }
         });
     }
     private void showApps(String text) {
@@ -147,7 +167,7 @@ public final class MainActivity extends Activity {
         for (int i = 0; i < names.length; i++) names[i] = paths.get(i).substring("/sdcard/Download/".length());
         new AlertDialog.Builder(this).setTitle("Internal Download — select APK")
             .setItems(names, (d, n) -> job(() -> {
-                pendingApk = ManagedApps.inspect(this, paths.get(n));
+                pendingApk = ManagedApps.inspect(this, paths.get(n), this::progress);
                 return pendingApk.label + "\n" + pendingApk.pkg;
             }, result -> confirmInstall()))
             .setNegativeButton("Cancel", null).show();
@@ -159,7 +179,7 @@ public final class MainActivity extends Activity {
             .setMessage(apk.pkg + "\n\n" + (apk.alreadyInstalled ? "Updates an existing app.\n" : "Installs a new app.\n")
                 + (apk.arm64 ? "ARM64 detected: compatibility preparation will run automatically from its top-bar shortcut.\n" : "Standard Android app.\n")
                 + "Adds a named shortcut to the top bar.")
-            .setPositiveButton("Install + add", (d, n) -> { pendingApk = null; job(() -> ManagedApps.install(this, apk), null); })
+            .setPositiveButton("Install + add", (d, n) -> { pendingApk = null; job(() -> ManagedApps.install(this, apk, this::progress), null); })
             .setNegativeButton("Cancel", (d, n) -> { apk.discard(); pendingApk = null; }).create();
         dialog.setOnCancelListener(d -> { apk.discard(); pendingApk = null; });
         dialog.show();

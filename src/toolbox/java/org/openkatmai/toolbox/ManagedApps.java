@@ -11,6 +11,7 @@ import org.json.*;
 
 final class ManagedApps {
     static final Object LOCK = new Object();
+    interface Progress { void update(String stage, long done, long total); }
     static final class Apk {
         File cache;
         String path, pkg, label, digest;
@@ -34,11 +35,22 @@ final class ManagedApps {
         return hash(new ByteArrayInputStream(p.signatures[0].toByteArray()));
     }
     static Apk inspect(Context c, String path) throws Exception {
+        return inspect(c, path, (stage, done, total) -> {});
+    }
+    static Apk inspect(Context c, String path, Progress progress) throws Exception {
         Actions.downloadPath(path);
         Apk apk = new Apk(); apk.path = path;
         apk.cache = File.createTempFile("inspect-", ".apk", c.getCacheDir());
         try {
-            try (LocalAdb adb = new LocalAdb(); OutputStream out = new FileOutputStream(apk.cache)) { adb.download(path, out); }
+            progress.update("Reading APK size", 0, 0);
+            long size = Long.parseLong(Actions.run("stat -c %s " + Actions.quote(path)).trim());
+            if (size <= 0 || size > 1073741824L) throw new IOException("APK must be between 1 byte and 1 GiB");
+            progress.update("Reading APK", 0, size);
+            try (LocalAdb adb = new LocalAdb(); OutputStream out = new BufferedOutputStream(new FileOutputStream(apk.cache), 65536)) {
+                adb.download(path, out, bytes -> progress.update("Reading APK", bytes, size));
+            }
+            if (apk.cache.length() != size) throw new IOException("Incomplete APK read: " + apk.cache.length() + " of " + size + " bytes");
+            progress.update("Inspecting APK", 0, 0);
             PackageInfo parsed = c.getPackageManager().getPackageArchiveInfo(apk.cache.getPath(), 0);
             if (parsed == null || parsed.applicationInfo == null) throw new IOException("Invalid APK or unreadable file");
             apk.pkg = Actions.packageName(parsed.packageName);
@@ -46,6 +58,7 @@ final class ManagedApps {
             parsed.applicationInfo.sourceDir = apk.cache.getPath(); parsed.applicationInfo.publicSourceDir = apk.cache.getPath();
             apk.label = parsed.applicationInfo.loadLabel(c.getPackageManager()).toString();
             apk.alreadyInstalled = info(c, apk.pkg) != null;
+            progress.update("Verifying APK checksum", 0, 0);
             try (InputStream in = new FileInputStream(apk.cache)) { apk.digest = hash(in); }
             try (ZipFile zip = new ZipFile(apk.cache)) {
                 Enumeration<? extends ZipEntry> it = zip.entries();
@@ -94,6 +107,9 @@ final class ManagedApps {
         if (!result.startsWith(expected)) throw new IOException("Uninstall helper verification failed: " + result);
     }
     static String install(Context c, Apk apk) throws Exception {
+        return install(c, apk, (stage, done, total) -> {});
+    }
+    static String install(Context c, Apk apk, Progress progress) throws Exception {
         synchronized (LOCK) {
             try {
                 ManagedStore store = new ManagedStore(c);
@@ -102,12 +118,15 @@ final class ManagedApps {
                 boolean existed = info(c, apk.pkg) != null;
                 record.put("label", apk.label).put("source", apk.path).put("digest", apk.digest).put("installPending", true);
                 store.save(apk.pkg, record); // No ownership claim until successful installation and readback.
+                progress.update("Installing APK - please wait", 0, 0);
                 Actions.install(apk.path, apk.arm64, apk.digest);
+                progress.update("Verifying installation", 0, 0);
                 PackageInfo installed = info(c, apk.pkg);
                 if (installed == null) throw new IOException("Installed package readback failed: " + apk.pkg);
                 record.put("owned", record.optBoolean("owned", false) || !existed)
                     .put("firstInstall", installed.firstInstallTime).put("signature", signature(installed)).put("installPending", false);
                 store.save(apk.pkg, record);
+                progress.update("Adding top-bar shortcut", 0, 0);
                 addTile(c, apk.pkg);
                 return "Installed: " + apk.label + "\n" + apk.pkg + "\nAdded to Quick Settings.\n"
                     + (apk.arm64 ? "ARM64 compatibility preparation is automatic when opened." : "Standard app launch.");

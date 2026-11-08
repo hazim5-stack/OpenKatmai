@@ -89,3 +89,16 @@ failure, retry behavior and cleanup preference handling. Both resource locales
 contain the complete popup text. The full Android application compiled and its APK
 passed signature and alignment verification. Physical popup layout and behavior
 on the remote remain untested for 1.1.1.
+
+## Version 1.1.2 transfer progress: software-only validation
+
+Adds staged APK inspection and installation feedback, including byte counts and
+percentage during APK reads. Buffered loopback ADB transfers advertise a 256 KiB
+receive payload and use TCP_NODELAY. APK reads have a ten-minute total deadline,
+retain the 1 GiB limit, and require the copied file size to match the source size.
+
+The application compiled successfully. TransportTest and TilePromptTest passed;
+the APK passed signature verification and zip alignment. No RC 2 connection,
+installation, UI check, transfer-speed measurement or aircraft pairing test was
+performed for this release. This update does not claim to fix third-party
+applications' REQUEST_HANDLER_NOT_FOUND pairing errors.
