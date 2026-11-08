@@ -82,6 +82,19 @@ are different capabilities.
 </tr>
 </table>
 
+## Optional: OpenKatmai Toolbox
+
+Install and open APKs directly from the remote, read device status and logs, and
+open Android settings or the assistant Shell through local system ADB.
+
+[Download Toolbox APK](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.0.0/OpenKatmai-Toolbox.apk) ·
+[Setup, features and verification](docs/TOOLBOX.md) · [Source](src/toolbox)
+
+![OpenKatmai Toolbox running on DJI RC 2](assets/toolbox.png)
+
+The companion adapts MIT-licensed UI components from RC2 Unlock Toolkit and uses
+OpenKatmai's UID 1000 connection. It does not require or provide UID 0 root.
+
 ## From a fresh connection to your first launch
 
 <img src="assets/workflow.svg" alt="Stage files → open assistant → activate ADB → install APK → add and test tiles" width="100%" />
@@ -222,6 +235,7 @@ The earlier blanket conclusion is retracted in the research record.
 
 ## Documentation library
 
+- [Toolbox companion](docs/TOOLBOX.md) — on-device apps, APK installation, diagnostics and settings.
 - [First-time setup](docs/SETUP.md) — files, Storage/Audio route, assistant, Shell,
   connection verification, logs and reactivation after reboot.
 - [64-bit applications](docs/64-BIT-APPS.md) — inspect, install, prepare, launch,
@@ -251,6 +265,7 @@ OpenKatmai/
 │   └── sethome.sh          Optional Home configuration helper
 ├── src/
 │   ├── quick-tiles/        Generic Android wrapper source and Windows build
+│   ├── toolbox/            Optional system-ADB companion with source and build
 │   └── agent.c             Historical UID 0 research source
 ├── payloads/README.md      Obtain and verify payloads; no binary distribution
 └── SHA256SUMS.txt          Payload identities
