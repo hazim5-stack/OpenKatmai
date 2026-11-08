@@ -42,8 +42,6 @@ Support for other v10 builds has not been established.
 ## Which tool matches my RC 2 firmware?
 
 For **DJI RC 2 / rc331**, choose the tool matching your firmware below.
-Versions use one format: **vXX.XX.XXXX (YYYY.MM.DD)**. Only entries with an
-identified external firmware version are included.
 
 | Firmware (release date) | Tool / GitHub | Access | Verification |
 |---|---|---|---|
