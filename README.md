@@ -89,9 +89,11 @@ Browse internal Download, inspect and install APKs, and automatically add named
 app shortcuts to Quick Settings. ARM64 shortcuts use the bounded compatibility
 helper automatically. Remove an app with its shortcut, or review and clean up
 all Toolbox-managed additions, optionally including source APKs and Toolbox itself.
-Device status, logs, Android settings and the assistant Shell remain available.
+On first launch, Toolbox asks whether to add its own top-bar shortcut, with Yes,
+No and a persistent Do not show this again checkbox. Device status, logs, Android
+settings and the assistant Shell remain available.
 
-[Download Toolbox APK](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.0/OpenKatmai-Toolbox.apk) ·
+[Download Toolbox APK](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.1/OpenKatmai-Toolbox.apk) ·
 [Setup, features and verification](docs/TOOLBOX.md) · [Source](src/toolbox)
 
 ![OpenKatmai Toolbox running on DJI RC 2](assets/toolbox.png)

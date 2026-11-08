@@ -199,6 +199,7 @@ final class ManagedApps {
             }
             if (failed) return results + "\nCleanup incomplete. Toolbox and remaining records retained; retry after resolving the errors.";
             Actions.tile("org.openkatmai.toolbox/.ToolboxTileService", false);
+            new TilePromptPreferences(c).added(false);
             String removed = Actions.run("rm -f " + Actions.HELPER + "; "
                     + "for f in /data/data/com.dpad.fuli/openkatmai-launch.*; do [ ! -f \"$f\" ] || rm -f \"$f\"; done; "
                     + "[ ! -e " + Actions.HELPER + " ] && echo HELPER_REMOVED");

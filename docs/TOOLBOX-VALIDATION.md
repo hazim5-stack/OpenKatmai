@@ -77,3 +77,15 @@ adb -s SERIAL push .\src\toolbox\tests\fixture\build\Fixture.apk "/sdcard/Downlo
 Use the companion UI to install, open through its tile and remove it. The fixture
 package is `org.openkatmai.toolbox.fixture`; it is not a flight application.
 Test-only copies were removed after validation.
+
+## Version 1.1.1 popup: software-only validation
+
+At the owner's request, no device connection, installation or remote UI test was
+performed for this patch. The live checks above describe the earlier 1.1 work.
+
+`TilePromptTest` passed all four Yes/No × checkbox combinations, reopening with saved
+preferences, successful-add duplicate suppression, failed/offline addition, storage
+failure, retry behavior and cleanup preference handling. Both resource locales
+contain the complete popup text. The full Android application compiled and its APK
+passed signature and alignment verification. Physical popup layout and behavior
+on the remote remain untested for 1.1.1.

@@ -15,6 +15,9 @@ public final class MainActivity extends Activity {
     private TextView output, status;
     private boolean busy, dead;
     private ManagedApps.Apk pendingApk;
+    private AlertDialog tilePromptDialog;
+    private CheckBox tilePromptCheckbox;
+    private boolean startupPromptHandled;
     private final ArrayList<Button> controls = new ArrayList<>();
     private interface Job { String run() throws Exception; }
     private interface Done { void accept(String text); }
@@ -27,7 +30,7 @@ public final class MainActivity extends Activity {
         root.setBackgroundColor(UI.BG);
         LinearLayout nav = UI.page(this);
         nav.addView(UI.title(this, "OpenKatmai"));
-        nav.addView(UI.dim(this, "Toolbox 1.1"));
+        nav.addView(UI.dim(this, "Toolbox 1.1.1"));
         button(nav, "Overview", () -> job(Actions::overview, null));
         button(nav, "Apps", () -> job(Actions::apps, this::showApps));
         button(nav, "Download / Install", () -> job(Actions::downloads, this::showApks));
@@ -64,7 +67,37 @@ public final class MainActivity extends Activity {
         content.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
         root.addView(content, new LinearLayout.LayoutParams(0, -1, 1));
         setContentView(root);
-        job(Actions::overview, null);
+        TilePrompt prompt = new TilePrompt(new TilePromptPreferences(this),
+                () -> Actions.tile("org.openkatmai.toolbox/.ToolboxTileService", true));
+        startupPromptHandled = saved != null && saved.getBoolean("tile-prompt-handled", false);
+        if (prompt.shouldShow(startupPromptHandled)) showTilePrompt(prompt, saved != null && saved.getBoolean("tile-prompt-checked", false));
+        else job(Actions::overview, null);
+    }
+    private void showTilePrompt(TilePrompt prompt, boolean checked) {
+        tilePromptCheckbox = new CheckBox(this);
+        tilePromptCheckbox.setText(R.string.tile_prompt_dont_show);
+        tilePromptCheckbox.setChecked(checked);
+        tilePromptCheckbox.setPadding(UI.dp(20), UI.dp(8), UI.dp(20), UI.dp(8));
+        tilePromptDialog = new AlertDialog.Builder(this)
+            .setTitle(R.string.tile_prompt_title).setMessage(R.string.tile_prompt_question)
+            .setView(tilePromptCheckbox).setCancelable(false)
+            .setPositiveButton(R.string.tile_prompt_yes, (d, n) -> {
+                startupPromptHandled = true;
+                boolean remember = tilePromptCheckbox.isChecked();
+                job(() -> { prompt.answer(true, remember); return getString(R.string.tile_prompt_added); }, null);
+            })
+            .setNegativeButton(R.string.tile_prompt_no, (d, n) -> {
+                startupPromptHandled = true;
+                try { prompt.answer(false, tilePromptCheckbox.isChecked()); job(Actions::overview, null); }
+                catch (Exception e) { status.setText("Action failed"); output.setText(e.getMessage()); }
+            }).create();
+        tilePromptDialog.show();
+    }
+    @Override protected void onSaveInstanceState(Bundle state) {
+        state.putBoolean("tile-prompt-handled", startupPromptHandled);
+        if (tilePromptDialog != null && tilePromptDialog.isShowing())
+            state.putBoolean("tile-prompt-checked", tilePromptCheckbox.isChecked());
+        super.onSaveInstanceState(state);
     }
     private void button(LinearLayout parent, String text, Runnable action) {
         Button b = new Button(this);
@@ -158,6 +191,7 @@ public final class MainActivity extends Activity {
             .setNegativeButton("Cancel", null).show();
     }
     @Override public void onDestroy() {
+        if (tilePromptDialog != null) tilePromptDialog.dismiss();
         dead = true; if (pendingApk != null) pendingApk.discard(); worker.shutdownNow(); super.onDestroy();
     }
 }

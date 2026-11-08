@@ -1,0 +1,8 @@
+<resources>
+    <string name="tile_prompt_title">اختصار الشريط العلوي</string>
+    <string name="tile_prompt_question">هل تريد أن أضيف نفسي إلى الشريط العلوي؟</string>
+    <string name="tile_prompt_yes">نعم</string>
+    <string name="tile_prompt_no">لا</string>
+    <string name="tile_prompt_dont_show">لا تظهر هذا مرة أخرى</string>
+    <string name="tile_prompt_added">تمت إضافة Toolbox إلى الشريط العلوي.</string>
+</resources>

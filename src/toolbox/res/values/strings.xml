@@ -1,0 +1,8 @@
+<resources>
+    <string name="tile_prompt_title">Top-bar shortcut</string>
+    <string name="tile_prompt_question">Would you like me to add myself to the top bar?</string>
+    <string name="tile_prompt_yes">Yes</string>
+    <string name="tile_prompt_no">No</string>
+    <string name="tile_prompt_dont_show">Do not show this again</string>
+    <string name="tile_prompt_added">Toolbox added to the top bar.</string>
+</resources>

@@ -1,4 +1,4 @@
-# OpenKatmai Toolbox 1.1
+# OpenKatmai Toolbox 1.1.1
 
 An optional on-device app manager for **DJI RC 2 firmware v10.00.0800 (2026.07.30)**.
 It uses the existing OpenKatmai local ADB connection as **UID 1000 system**.
@@ -8,7 +8,7 @@ Installing Toolbox alone does not activate ADB or grant full root.
 
 ## Install or update Toolbox
 
-Download [OpenKatmai-Toolbox.apk](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.0/OpenKatmai-Toolbox.apk)
+Download [OpenKatmai-Toolbox.apk](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.1/OpenKatmai-Toolbox.apk)
 and compare it with that release's `SHA256SUMS.txt`. Activate ADB using
 [First-time setup](SETUP.md), then install:
 
@@ -18,9 +18,29 @@ adb -s SERIAL shell am start -n org.openkatmai.toolbox/.MainActivity
 adb -s SERIAL shell cmd statusbar add-tile org.openkatmai.toolbox/.ToolboxTileService
 ```
 
-Replace `SERIAL` with the actual device serial. Version 1.1 updates the published
-1.0 APK with the same signing key. Keep `127.0.0.1:5555` active even when your PC
+Replace `SERIAL` with the actual device serial. Version 1.1.1 updates earlier published
+Toolbox APKs with the same signing key. Keep `127.0.0.1:5555` active even when your PC
 uses USB, and reactivate OpenKatmai after each remote reboot.
+
+## First-launch shortcut prompt
+
+On first launch, a popup asks **Would you like me to add myself to the top bar?**
+with **Yes**, **No** and **Do not show this again**. Arabic text is included for
+Arabic-language devices.
+
+- **Yes** adds the Toolbox tile through local system ADB and verifies registration.
+  After success, the prompt is not repeated for an already-added tile.
+- **No** leaves the top bar unchanged. Without the checkbox, the prompt can appear
+  again on the next launch.
+- The checkbox saves the suppression preference for either answer, including when
+  a Yes attempt fails because ADB is unavailable. An unchecked failed Yes can retry
+  on the next launch.
+- Bulk cleanup resets the remembered tile-added state while preserving the user's
+  Do not show this again choice.
+
+The popup is shown before startup diagnostics, so an initial background request
+cannot silently swallow a Yes click. Checkbox state survives activity recreation.
+After opting out, the manual add-tile command above remains available.
 
 ## Download, install and add to the top bar
 
@@ -132,3 +152,14 @@ java -cp .\src\toolbox\build\tests org.openkatmai.toolbox.TransportTest
 ```
 
 The host fixture does not connect to or mutate the RC 2.
+
+### First-launch prompt host tests (1.1.1)
+
+```powershell
+javac --release 8 -d .\src\toolbox\build\tests .\src\toolbox\java\org\openkatmai\toolbox\TilePrompt.java .\src\toolbox\tests\TilePromptTest.java
+java -cp .\src\toolbox\build\tests org.openkatmai.toolbox.TilePromptTest
+```
+
+This pure-Java test uses in-memory preferences and a fake tile action. It makes no
+network connection. The 1.1.1 popup was checked programmatically and compiled, but
+was not installed or tested on the owner's powered-off remote.
