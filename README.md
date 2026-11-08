@@ -46,10 +46,19 @@ For **DJI RC 2 / rc331**, choose the tool matching your firmware below.
 | Firmware (release date) | Tool / GitHub | Access | Verification |
 |---|---|---|---|
 | **v10.00.0800 (2026.07.30)** | [hazim5-stack/OpenKatmai](https://github.com/hazim5-stack/OpenKatmai) | **System ADB (UID 1000)**, APK installation, tested ARM64 launch and Quick Settings shortcuts. **Not UID 0 root.** | Verified on this project's RC 2; see [findings](docs/FINDINGS.md#firmware-identity). |
+| **v10.00.0700 (2026.06.23)** | [Sapphire-Rapids/DJI-RC2-Mini5Pro-Research](https://github.com/Sapphire-Rapids/DJI-RC2-Mini5Pro-Research) | Firmware acquisition, Android/ADB analysis and experimental access tools. | Contains [RC331 module downloaders](https://github.com/Sapphire-Rapids/DJI-RC2-Mini5Pro-Research/tree/main/host-tools/firmware-acquisition) and [ADB analysis](https://github.com/Sapphire-Rapids/DJI-RC2-Mini5Pro-Research/tree/main/host-tools/adbd-userspace-patch) for this release. Research coverage, not a verified unlock on this firmware. |
 | **v02.00.0300 (2023.12.21)** | [Dr-Muh/dji-adb](https://github.com/Dr-Muh/dji-adb) | Direct USB ADB **root shell**, as reported by its author. | Firmware listed in the upstream [tested versions](https://github.com/Dr-Muh/dji-adb#tested-rc2-firmware-versions); release date confirmed in [DJI release notes](https://dl.djicdn.com/downloads/DJI_RC_2/RN/20241015/DJI_RC_2_Release_Notes_EN.pdf). Not independently tested here on that release. |
 
 Support for other firmware versions is not implied. System ADB and full root
 are different capabilities.
+
+## Related RC 2 projects
+
+| Project | Purpose | GitHub |
+|---|---|---|
+| **RC2 Unlock Toolkit** | Tools for enabling ADB, installing APKs, opening developer settings and setting up persistent root ADB where its prerequisites are met. | [456erddgr/rc2-unlock-toolkit](https://github.com/456erddgr/rc2-unlock-toolkit) |
+| **DJI RC2 Mini5Pro Research** | Research and tools for hidden Android settings, factory-assistant access, ADB diagnostics and firmware analysis. | [Sapphire-Rapids/DJI-RC2-Mini5Pro-Research](https://github.com/Sapphire-Rapids/DJI-RC2-Mini5Pro-Research) |
+| **DJI ADB** | Direct USB ADB connection experiments and shell access tools for DJI RC 2. | [Dr-Muh/dji-adb](https://github.com/Dr-Muh/dji-adb) |
 
 ## Choose your path
 
