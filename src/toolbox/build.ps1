@@ -22,7 +22,16 @@ $jar = Java-Tool 'jar'
 $keytool = Java-Tool 'keytool'
 Push-Location $PSScriptRoot
 try {
-    foreach ($dir in @('build','build\gen','build\classes','build\dex')) { New-Item -ItemType Directory -Force $dir | Out-Null }
+    foreach ($dir in @('build','build\gen','build\classes','build\dex','build\device','build\device-dex')) { New-Item -ItemType Directory -Force $dir | Out-Null }
+    $deviceSources = @(Get-ChildItem device -Recurse -Filter '*.java' | ForEach-Object FullName)
+    & $javac -encoding UTF-8 --release 8 -classpath $androidJar -d build\device @deviceSources
+    Check-Exit
+    & $jar cf build\device-classes.jar -C build\device .
+    Check-Exit
+    & $java -cp "$bt\lib\d8.jar" com.android.tools.r8.D8 --lib $androidJar --min-api 24 --output build\device-dex build\device-classes.jar
+    Check-Exit
+    & $jar cf assets\uninstall-helper.jar -C build\device-dex classes.dex
+    Check-Exit
     & "$bt\aapt.exe" package -f -M AndroidManifest.xml -S res -A assets -I $androidJar -J build\gen -F build\resources.apk
     Check-Exit
     $sources = @(Get-ChildItem java,build\gen -Recurse -Filter '*.java' | ForEach-Object FullName)

@@ -1,0 +1,1 @@
+package org.openkatmai.toolbox.fixture; public class MainActivity extends android.app.Activity { public void onCreate(android.os.Bundle b) { super.onCreate(b); android.widget.TextView t=new android.widget.TextView(this);t.setText("OpenKatmai managed-app test\n64-bit process: "+android.os.Process.is64Bit());t.setTextSize(24);setContentView(t); }}

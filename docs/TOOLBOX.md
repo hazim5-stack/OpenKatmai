@@ -1,55 +1,101 @@
-# OpenKatmai Toolbox
+# OpenKatmai Toolbox 1.1
 
-Optional on-device tools for **DJI RC 2 firmware v10.00.0800 (2026.07.30)**.
-The companion uses OpenKatmai's existing loopback ADB service to run selected
-actions as **UID 1000 system**. Installing the APK alone does not enable ADB or root.
+An optional on-device app manager for **DJI RC 2 firmware v10.00.0800 (2026.07.30)**.
+It uses the existing OpenKatmai local ADB connection as **UID 1000 system**.
+Installing Toolbox alone does not activate ADB or grant full root.
 
-![OpenKatmai Toolbox on a real RC 2](../assets/toolbox.png)
+![OpenKatmai Toolbox on RC 2](../assets/toolbox.png)
 
-## Features
+## Install or update Toolbox
 
-- Overview: identity, external firmware, memory, storage, battery and runtime state.
-- Apps: list third-party packages and open a selected launcher activity.
-- Install APK: select an APK directly in internal Download, confirm installation
-  or update, and optionally request `arm64-v8a`.
-- Logs: read the latest 100 logcat entries, bounded to 45 KB. Logs stay on screen;
-  they are not uploaded or sent to the project maintainers.
-- Settings, developer settings and factory-assistant Shell shortcuts.
-- Optional **Toolbox** Quick Settings tile.
-
-ARM64 packages use the existing bounded `launch64.sh` workflow. Install the helper
-below and follow [the ARM64 guide](64-BIT-APPS.md). APK compatibility and SDK or
-aircraft connectivity are separate from successful installation and UI launch.
-
-## Install
-
-Activate system ADB using [First-time setup](SETUP.md), then download
-[OpenKatmai-Toolbox.apk](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.0.0/OpenKatmai-Toolbox.apk).
-Compare its SHA-256 with the release's `SHA256SUMS.txt` before installation.
+Download [OpenKatmai-Toolbox.apk](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.0/OpenKatmai-Toolbox.apk)
+and compare it with that release's `SHA256SUMS.txt`. Activate ADB using
+[First-time setup](SETUP.md), then install:
 
 ```powershell
 adb -s SERIAL install -r .\OpenKatmai-Toolbox.apk
-adb -s SERIAL push .\scripts\launch64.sh /data/data/com.dpad.fuli/launch64.sh
-adb -s SERIAL shell chmod 700 /data/data/com.dpad.fuli/launch64.sh
-adb -s SERIAL shell sha256sum /data/data/com.dpad.fuli/launch64.sh
-(Get-FileHash .\scripts\launch64.sh -Algorithm SHA256).Hash
 adb -s SERIAL shell am start -n org.openkatmai.toolbox/.MainActivity
 adb -s SERIAL shell cmd statusbar add-tile org.openkatmai.toolbox/.ToolboxTileService
 ```
 
-Replace `SERIAL` with your device serial. Ensure the two helper hashes match before
-using ARM64 app launch. The local daemon must listen on `127.0.0.1:5555`, even when
-your computer connects through USB. Reactivate it after each reboot. The companion
-does not persist ADB, elevate itself to root, or inherit the computer's shell UID.
+Replace `SERIAL` with the actual device serial. Version 1.1 updates the published
+1.0 APK with the same signing key. Keep `127.0.0.1:5555` active even when your PC
+uses USB, and reactivate OpenKatmai after each remote reboot.
 
-Copy APKs to **internal Download** by MTP, tap **Install APK**, select a file,
-and confirm. The system-side install stages the APK in a unique temporary file
-inside the factory assistant's data directory and removes it on completion or failure.
-The source APK in Download is retained. There is no arbitrary shell-command input
-and external activity intents do not accept action/command parameters.
+## Download, install and add to the top bar
 
-CPU/GPU tuning, fan control, swap changes, Magisk modules, boot animations, partition
-tools and bootloader actions from the original toolkit are not part of this adaptation.
+1. Copy a standalone APK to **internal Download** over USB file transfer.
+2. Open Toolbox and tap **Download / Install** to browse APKs in that folder.
+3. Select a file. Toolbox reads its package name, app label and native-library ABIs.
+4. Review the app name, whether this updates an existing app, and ARM64 detection.
+5. Tap **Install + add**. After installation, a named app tile appears in Quick Settings.
+
+The chooser supports spaces and apostrophes in filenames. The folder's original
+APK stays in Download until you explicitly select source deletion during removal.
+The inspection cache is temporary. Toolbox verifies the inspected file's SHA-256
+again on the staged installation copy, so changing the APK after confirmation
+aborts installation. Split APK sets and arbitrary APK compatibility are not implied.
+
+**Apps** also lets you open an existing app, add it to the top bar, or remove only
+its shortcut. Apps already present before Toolbox managed them are recorded as
+pre-existing and are preserved during bulk cleanup. Up to **24 managed app tiles**
+are available. Re-adding the same app reuses its slot instead of making duplicates.
+Non-launcher packages can install, but cannot receive a launch tile.
+
+## Automatic ARM64 compatibility
+
+Every app tile reads the installed package ABI. For `arm64-v8a`, it deploys and
+hash-verifies the bundled `launch64.sh` as a dedicated Toolbox helper, temporarily
+starts primary zygote when necessary, opens the app, and restores the previous
+primary state. Secondary zygote and persistent policy are left unchanged. This is
+the same bounded preparation approach used for FlyKML, generalized to the selected
+app's launcher activity. Multiple launcher entries are handled without opening
+Android's generic resolver. Standard apps use a normal activity launch.
+
+The helper includes a short runtime-ready delay, hard process timeouts and a
+watchdog. The compatibility task runs independently of its ADB connection and writes a
+private temporary result file, which Toolbox polls through short raw-exec requests
+and removes afterward. Launch results must include `APP_READY` and `RESTORE_DONE`.
+**About** shows the last top-bar launch result. A successful app launch does not
+establish aircraft/SDK connectivity or compatibility with every background process.
+
+## Remove apps and clean up
+
+**Remove apps** shows removable third-party packages. Confirming removal deletes
+the app and its data and removes its managed top-bar tile. A separate checkbox
+can delete its recorded source APK from Download. Source deletion requires the
+original recorded SHA-256; a changed file is kept and reported.
+
+**Clean up** first shows a review of recorded apps and actions. It:
+
+- Removes the managed app tiles.
+- Uninstalls apps newly installed through Toolbox, checking their first-install
+  timestamp and signing identity before automatic removal.
+- Preserves apps that existed before Toolbox managed them.
+- Optionally deletes the recorded source APKs, with the same hash check.
+- Removes Toolbox's own tile, dedicated helpers and inspection cache.
+- Optionally uninstalls Toolbox **last**.
+
+System packages, DJI Fly, the factory assistant and Toolbox are protected from
+the ordinary app remover. The active Home launcher must be changed before it can
+be uninstalled. Failed actions retain their journal entries for retry; bulk cleanup
+does not uninstall Toolbox if an earlier action needs attention. A changed/replaced
+app is not silently claimed as Toolbox-owned. The existing ADB activation, apps
+and top-bar components created outside this companion are preserved.
+
+On the tested build, the standard shell uninstall command has a null-caller-package
+failure under UID 1000. The companion instead deploys a small hash-verified Java
+helper that calls Android 11's package deletion API as system UID, and checks
+package readback. It does not elevate to UID 0, patch Android or write partitions.
+The helper's source is included under `src/toolbox/device/`.
+
+## Other tools
+
+Overview reads firmware, memory, storage, battery and runtime state. Logs reads a
+bounded recent logcat snapshot. Settings, Developer and Shell open the corresponding
+Android/factory-assistant pages. No command is submitted through Shell automatically.
+No logs, device registration or telemetry are sent to project maintainers.
+CPU/GPU tuning, fan control, Magisk and bootloader tools are not included.
 
 ## Build and attribution
 
@@ -59,48 +105,30 @@ Build on Windows with JDK 17+, Android platform 30 and build-tools 35.0.0:
 .\src\toolbox\build.ps1
 ```
 
-Output: `src/toolbox/build/OpenKatmai-Toolbox.apk`. The local signing key is created
-in the ignored build directory; keep it to sign future updates to your local build.
-Locally generated keys differ from the published release key, so rebuilding does
-not produce a byte-identical release or an APK that updates a differently signed copy.
+Output: `src/toolbox/build/OpenKatmai-Toolbox.apk`. The build compiles the Android 11
+uninstall helper and bundles it together with the ARM64 script. Generated helper
+JARs and build output are ignored; source and build instructions are committed.
+Keep your local signing key to sign future updates. Independently generated keys
+differ from the published release key and cannot update that installed APK.
 
-UI components are adapted from **RC2 Unlock Toolkit**, under MIT. See
-[attribution](../src/toolbox/NOTICE.md) and [upstream license](../src/toolbox/UPSTREAM-LICENSE.txt).
-The application has its own package ID and can coexist with the upstream Toolbox.
+MIT-licensed UI components are adapted from
+[RC2 Unlock Toolkit](https://github.com/456erddgr/rc2-unlock-toolkit).
+See [attribution](../src/toolbox/NOTICE.md) and [license](../src/toolbox/UPSTREAM-LICENSE.txt).
+The full license is also bundled in the APK. The separate package ID allows
+Toolbox to coexist with the original upstream app.
 
 ## Validation
 
-On the connected RC 2, real UI taps confirmed overview data through UID 1000 ADB,
-the app chooser, launching the original Toolbox, reading logs, reinstalling the
-same upstream Toolbox APK from Download (`Success`), and opening Android settings,
-developer settings and the factory assistant's Shell activity. The test APK copy
-was removed afterward. No command was submitted through the Shell UI.
+Live validation and the exact observed outcomes are recorded in
+[Toolbox 1.1 validation](TOOLBOX-VALIDATION.md). Firmware
+**v10.00.0900 (2026.10.20)** is a community-testing candidate, **not tested** here.
 
-The helper was deployed with matching host/device hashes. The companion's ARM64
-selection/launch path has not separately been validated in this test; earlier
-helper validation is recorded in [findings](FINDINGS.md). A real tap on the Toolbox
-Quick Settings tile opened the companion successfully. Primary zygote remained stopped,
-secondary running and persistent policy `4` after the functional tests.
-
-The APK passed signature and zip-alignment verification. A host protocol fixture
-tests UID rejection, packet-size bounds, late stream-close handling, quoting,
-package-command injection rejection and Download path traversal rejection:
+Host-only protocol and removal-policy checks (requires free host loopback port 5555):
 
 ```powershell
 New-Item -ItemType Directory -Force .\src\toolbox\build\tests | Out-Null
-javac --release 8 -d .\src\toolbox\build\tests .\src\toolbox\java\org\openkatmai\toolbox\LocalAdb.java .\src\toolbox\java\org\openkatmai\toolbox\Actions.java .\src\toolbox\tests\TransportTest.java
+javac --release 8 -d .\src\toolbox\build\tests .\src\toolbox\java\org\openkatmai\toolbox\LocalAdb.java .\src\toolbox\java\org\openkatmai\toolbox\Actions.java .\src\toolbox\java\org\openkatmai\toolbox\SafetyPolicy.java .\src\toolbox\tests\TransportTest.java
 java -cp .\src\toolbox\build\tests org.openkatmai.toolbox.TransportTest
 ```
 
-This host-only test temporarily binds `127.0.0.1:5555` and fails if occupied.
-It does not connect to the RC 2. The live device checks above are separate evidence.
-
-## Remove
-
-```powershell
-adb -s SERIAL shell cmd statusbar remove-tile org.openkatmai.toolbox/.ToolboxTileService
-adb -s SERIAL uninstall org.openkatmai.toolbox
-```
-
-Removing the companion does not remove your installed APKs or the original Toolbox.
-Remove `launch64.sh` only if you no longer use it from other OpenKatmai shortcuts.
+The host fixture does not connect to or mutate the RC 2.

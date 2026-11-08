@@ -41,9 +41,39 @@ final class LocalAdb implements Closeable {
         requireSystem();
         return shell(command);
     }
+    /** Raw exec avoids PTY newline conversion when inspecting an APK. Streams to disk. */
+    void download(String path, OutputStream target) throws IOException {
+        Actions.downloadPath(path);
+        requireSystem();
+        int local = stream++;
+        send(OPEN, local, 0, ("exec:cat " + Actions.quote(path) + "\0").getBytes(StandardCharsets.UTF_8));
+        long total = 0, deadline = System.nanoTime() + 120000000000L;
+        while (true) {
+            long remaining = (deadline - System.nanoTime()) / 1000000L;
+            if (remaining <= 0) throw new IOException("APK read timed out");
+            socket.setSoTimeout((int)Math.min(55000, remaining));
+            Packet p = receive();
+            if (p.b != local) {
+                if (p.b < local && (p.command == CLSE || p.command == OKAY)) continue;
+                throw new IOException("Unexpected APK stream");
+            }
+            if (p.command == OKAY) continue;
+            if (p.command == WRTE) {
+                total += p.data.length;
+                if (total > 1073741824L) throw new IOException("APK exceeds 1 GiB inspection limit");
+                target.write(p.data); send(OKAY, local, p.a, new byte[0]);
+            } else if (p.command == CLSE) {
+                send(CLSE, local, p.a, new byte[0]);
+                if (total == 0) throw new IOException("APK is empty or cannot be read");
+                return;
+            } else throw new IOException("Unexpected APK packet");
+        }
+    }
     private String shell(String command) throws IOException {
         int local = stream++;
-        send(OPEN, local, 0, ("shell:" + command + "\0").getBytes(StandardCharsets.UTF_8));
+        // Raw exec does not allocate a PTY. A watchdog must not keep a terminal-backed
+        // stream alive after launch64 has finished and restored its state.
+        send(OPEN, local, 0, ("exec:sh -c " + Actions.quote(command) + "\0").getBytes(StandardCharsets.UTF_8));
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         long deadline = System.nanoTime() + 60000000000L;
         while (true) {

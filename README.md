@@ -45,6 +45,7 @@ For **DJI RC 2 / rc331**, choose the tool matching your firmware below.
 
 | Firmware (release date) | Tool / GitHub | Access | Verification |
 |---|---|---|---|
+| **v10.00.0900 (2026.10.20)** | [hazim5-stack/OpenKatmai](https://github.com/hazim5-stack/OpenKatmai) | Community testing candidate for system ADB and Toolbox. | **Not tested. High likelihood of compatibility is expected, but has not been verified.** Community testing is needed. If it does not work, please [fork the repository](https://github.com/hazim5-stack/OpenKatmai/fork) and share your findings or a compatibility fix. |
 | **v10.00.0800 (2026.07.30)** | [hazim5-stack/OpenKatmai](https://github.com/hazim5-stack/OpenKatmai) | **System ADB (UID 1000)**, APK installation, tested ARM64 launch and Quick Settings shortcuts. **Not UID 0 root.** | Verified on this project's RC 2; see [findings](docs/FINDINGS.md#firmware-identity). |
 | **v10.00.0700 (2026.06.23)** | [Sapphire-Rapids/DJI-RC2-Mini5Pro-Research](https://github.com/Sapphire-Rapids/DJI-RC2-Mini5Pro-Research) | Firmware acquisition, Android/ADB analysis and experimental access tools. | Contains [RC331 module downloaders](https://github.com/Sapphire-Rapids/DJI-RC2-Mini5Pro-Research/tree/main/host-tools/firmware-acquisition) and [ADB analysis](https://github.com/Sapphire-Rapids/DJI-RC2-Mini5Pro-Research/tree/main/host-tools/adbd-userspace-patch) for this release. Research coverage, not a verified unlock on this firmware. |
 | **v02.00.0300 (2023.12.21)** | [Dr-Muh/dji-adb](https://github.com/Dr-Muh/dji-adb) | Direct USB ADB **root shell**, as reported by its author. | Firmware listed in the upstream [tested versions](https://github.com/Dr-Muh/dji-adb#tested-rc2-firmware-versions); release date confirmed in [DJI release notes](https://dl.djicdn.com/downloads/DJI_RC_2/RN/20241015/DJI_RC_2_Release_Notes_EN.pdf). Not independently tested here on that release. |
@@ -84,10 +85,13 @@ are different capabilities.
 
 ## Optional: OpenKatmai Toolbox
 
-Install and open APKs directly from the remote, read device status and logs, and
-open Android settings or the assistant Shell through local system ADB.
+Browse internal Download, inspect and install APKs, and automatically add named
+app shortcuts to Quick Settings. ARM64 shortcuts use the bounded compatibility
+helper automatically. Remove an app with its shortcut, or review and clean up
+all Toolbox-managed additions, optionally including source APKs and Toolbox itself.
+Device status, logs, Android settings and the assistant Shell remain available.
 
-[Download Toolbox APK](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.0.0/OpenKatmai-Toolbox.apk) ·
+[Download Toolbox APK](https://github.com/hazim5-stack/OpenKatmai/releases/download/toolbox-v1.1.0/OpenKatmai-Toolbox.apk) ·
 [Setup, features and verification](docs/TOOLBOX.md) · [Source](src/toolbox)
 
 ![OpenKatmai Toolbox running on DJI RC 2](assets/toolbox.png)

@@ -1,0 +1,1 @@
+OpenKatmai non-flight test fixture. No network or device-control features.

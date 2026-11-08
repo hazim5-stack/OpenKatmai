@@ -14,6 +14,7 @@ public final class MainActivity extends Activity {
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
     private TextView output, status;
     private boolean busy, dead;
+    private ManagedApps.Apk pendingApk;
     private final ArrayList<Button> controls = new ArrayList<>();
     private interface Job { String run() throws Exception; }
     private interface Done { void accept(String text); }
@@ -26,10 +27,12 @@ public final class MainActivity extends Activity {
         root.setBackgroundColor(UI.BG);
         LinearLayout nav = UI.page(this);
         nav.addView(UI.title(this, "OpenKatmai"));
-        nav.addView(UI.dim(this, "Toolbox 1.0"));
+        nav.addView(UI.dim(this, "Toolbox 1.1"));
         button(nav, "Overview", () -> job(Actions::overview, null));
         button(nav, "Apps", () -> job(Actions::apps, this::showApps));
-        button(nav, "Install APK", () -> job(Actions::downloads, this::showApks));
+        button(nav, "Download / Install", () -> job(Actions::downloads, this::showApks));
+        button(nav, "Remove apps", () -> job(Actions::apps, text -> showRemoveApps(text)));
+        button(nav, "Clean up", () -> job(() -> ManagedApps.plan(this), this::showCleanup));
         button(nav, "Logs", () -> job(Actions::logs, null));
         button(nav, "Settings", () -> job(() -> Actions.settings("android"), null));
         button(nav, "Developer", () -> job(() -> Actions.settings("developer"), null));
@@ -42,7 +45,8 @@ public final class MainActivity extends Activity {
                 while ((n = in.read(buffer)) != -1) bytes.write(buffer, 0, n);
                 license = bytes.toString("UTF-8");
             } catch (Exception e) { license = "See the upstream license in the project source."; }
-            output.setText("OpenKatmai Toolbox\n\nAdapted for system-UID ADB.\n\nUI adapted from RC2 Unlock Toolkit contributors (MIT).\nhttps://github.com/456erddgr/rc2-unlock-toolkit\n\nSource and setup:\nhttps://github.com/hazim5-stack/OpenKatmai\n\nThe original Root Toolbox remains a separate application.\n\n" + license);
+            output.setText("OpenKatmai Toolbox\n\nAdapted for system-UID ADB.\n\nUI adapted from RC2 Unlock Toolkit contributors (MIT).\nhttps://github.com/456erddgr/rc2-unlock-toolkit\n\nSource and setup:\nhttps://github.com/hazim5-stack/OpenKatmai\n\nThe original Root Toolbox remains a separate application.\n\nLast top-bar launch:\n"
+                + getSharedPreferences("launch-status", MODE_PRIVATE).getString("last", "No launch recorded") + "\n\n" + license);
         });
         ScrollView navScroll = new ScrollView(this);
         navScroll.addView(nav);
@@ -77,10 +81,10 @@ public final class MainActivity extends Activity {
             String result; boolean ok;
             try { result = work.run(); ok = true; }
             catch (Exception e) { result = "Connection/action failed: " + e.getMessage()
-                    + "\n\nActivate OpenKatmai from the factory assistant, then try again."; ok = false; }
+                    + "\n\nIf the connection is unavailable, reactivate OpenKatmai from the factory assistant."; ok = false; }
             final String text = result; final boolean success = ok;
             runOnUiThread(() -> {
-                if (dead) return;
+                if (dead) { if (pendingApk != null) pendingApk.discard(); return; }
                 busy = false; for (Button b : controls) b.setEnabled(true);
                 status.setText(success ? "OpenKatmai | system ADB | UID 1000" : "Action failed");
                 output.setText(text.isEmpty() ? "No results." : text);
@@ -93,25 +97,67 @@ public final class MainActivity extends Activity {
         for (String line : text.split("\n")) if (line.startsWith("package:")) packages.add(line.substring(8).trim());
         if (packages.isEmpty()) return;
         String[] items = packages.toArray(new String[0]);
-        new AlertDialog.Builder(this).setTitle("Open installed app")
-            .setItems(items, (d, n) -> job(() -> Actions.open(items[n]), null))
+        new AlertDialog.Builder(this).setTitle("Installed apps")
+            .setItems(items, (d, n) -> new AlertDialog.Builder(this).setTitle(items[n])
+                .setItems(new String[]{"Open", "Add to top bar", "Remove shortcut only"}, (x, action) -> {
+                    if (action == 0) job(() -> ManagedApps.open(this, items[n]), null);
+                    if (action == 1) job(() -> ManagedApps.addTile(this, items[n]), null);
+                    if (action == 2) job(() -> ManagedApps.removeTile(this, items[n]), null);
+                }).setNegativeButton("Cancel", null).show())
             .setNegativeButton("Cancel", null).show();
     }
     private void showApks(String text) {
         ArrayList<String> paths = new ArrayList<>();
-        for (String line : text.split("\n")) if (line.startsWith("/sdcard/Download/") && line.endsWith(".apk")) paths.add(line);
+        for (String line : text.split("\n")) if (line.startsWith("/sdcard/Download/") && line.toLowerCase(java.util.Locale.ROOT).endsWith(".apk")) paths.add(line.trim());
         if (paths.isEmpty()) { output.setText("Copy an APK to internal Download using USB file transfer, then tap Install APK."); return; }
         String[] names = new String[paths.size()];
         for (int i = 0; i < names.length; i++) names[i] = paths.get(i).substring("/sdcard/Download/".length());
-        new AlertDialog.Builder(this).setTitle("APK in internal Download")
-            .setItems(names, (d, n) -> new AlertDialog.Builder(this).setTitle("Install " + names[n] + "?")
-                .setMessage("An existing app with the same package may be updated. Select ARM64 only when the APK provides arm64-v8a libraries.")
-                .setPositiveButton("Install", (x, y) -> job(() -> Actions.install(paths.get(n), false), null))
-                .setNeutralButton("Install ARM64", (x, y) -> job(() -> Actions.install(paths.get(n), true), null))
-                .setNegativeButton("Cancel", null).show())
+        new AlertDialog.Builder(this).setTitle("Internal Download — select APK")
+            .setItems(names, (d, n) -> job(() -> {
+                pendingApk = ManagedApps.inspect(this, paths.get(n));
+                return pendingApk.label + "\n" + pendingApk.pkg;
+            }, result -> confirmInstall()))
+            .setNegativeButton("Cancel", null).show();
+    }
+    private void confirmInstall() {
+        final ManagedApps.Apk apk = pendingApk;
+        if (apk == null) return;
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Install " + apk.label + "?")
+            .setMessage(apk.pkg + "\n\n" + (apk.alreadyInstalled ? "Updates an existing app.\n" : "Installs a new app.\n")
+                + (apk.arm64 ? "ARM64 detected: compatibility preparation will run automatically from its top-bar shortcut.\n" : "Standard Android app.\n")
+                + "Adds a named shortcut to the top bar.")
+            .setPositiveButton("Install + add", (d, n) -> { pendingApk = null; job(() -> ManagedApps.install(this, apk), null); })
+            .setNegativeButton("Cancel", (d, n) -> { apk.discard(); pendingApk = null; }).create();
+        dialog.setOnCancelListener(d -> { apk.discard(); pendingApk = null; });
+        dialog.show();
+    }
+    private void showRemoveApps(String text) {
+        ArrayList<String> packages = new ArrayList<>();
+        for (String line : text.split("\n")) if (line.startsWith("package:")) {
+            String pkg = line.substring(8).trim();
+            if (!ManagedApps.protectedPackage(this, pkg)) packages.add(pkg);
+        }
+        if (packages.isEmpty()) { output.setText("No removable third-party apps."); return; }
+        String[] items = packages.toArray(new String[0]);
+        new AlertDialog.Builder(this).setTitle("Remove app + top-bar shortcut")
+            .setItems(items, (d, n) -> {
+                CheckBox source = new CheckBox(this); source.setText("Also delete its recorded APK from Download");
+                new AlertDialog.Builder(this).setTitle("Uninstall " + items[n] + "?")
+                    .setMessage("Deletes this app and its app data, and removes its managed shortcut.")
+                    .setView(source).setPositiveButton("Uninstall", (x, y) -> job(() -> ManagedApps.removeApp(this, items[n], source.isChecked(), false), null))
+                    .setNegativeButton("Cancel", null).show();
+            }).setNegativeButton("Cancel", null).show();
+    }
+    private void showCleanup(String plan) {
+        LinearLayout options = new LinearLayout(this); options.setOrientation(LinearLayout.VERTICAL);
+        CheckBox source = new CheckBox(this); source.setText("Delete recorded source APKs from Download"); options.addView(source);
+        CheckBox self = new CheckBox(this); self.setText("Also uninstall OpenKatmai Toolbox last"); options.addView(self);
+        new AlertDialog.Builder(this).setTitle("Review cleanup")
+            .setMessage(plan + "\nApp data is deleted for apps being uninstalled. Changed source APKs are kept.")
+            .setView(options).setPositiveButton("Clean up", (d, n) -> job(() -> ManagedApps.cleanup(this, source.isChecked(), self.isChecked()), null))
             .setNegativeButton("Cancel", null).show();
     }
     @Override public void onDestroy() {
-        dead = true; worker.shutdownNow(); super.onDestroy();
+        dead = true; if (pendingApk != null) pendingApk.discard(); worker.shutdownNow(); super.onDestroy();
     }
 }

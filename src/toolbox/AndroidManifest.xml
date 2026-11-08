@@ -1,11 +1,85 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.openkatmai.toolbox" android:versionCode="1" android:versionName="1.0">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.openkatmai.toolbox" android:versionCode="2" android:versionName="1.1">
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="30" />
   <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
   <application android:label="OpenKatmai Toolbox" android:icon="@drawable/ic_tile" android:theme="@android:style/Theme.Material.NoActionBar" android:allowBackup="false">
+    <activity android:name=".LaunchActivity" android:exported="false" android:taskAffinity="org.openkatmai.toolbox.launch" android:excludeFromRecents="true" />
     <activity android:name=".MainActivity" android:exported="true">
       <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
     </activity>
     <service android:name=".ToolboxTileService" android:label="Toolbox" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T01" android:enabled="false" android:label="App 1" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T02" android:enabled="false" android:label="App 2" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T03" android:enabled="false" android:label="App 3" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T04" android:enabled="false" android:label="App 4" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T05" android:enabled="false" android:label="App 5" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T06" android:enabled="false" android:label="App 6" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T07" android:enabled="false" android:label="App 7" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T08" android:enabled="false" android:label="App 8" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T09" android:enabled="false" android:label="App 9" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T10" android:enabled="false" android:label="App 10" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T11" android:enabled="false" android:label="App 11" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T12" android:enabled="false" android:label="App 12" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T13" android:enabled="false" android:label="App 13" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T14" android:enabled="false" android:label="App 14" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T15" android:enabled="false" android:label="App 15" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T16" android:enabled="false" android:label="App 16" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T17" android:enabled="false" android:label="App 17" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T18" android:enabled="false" android:label="App 18" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T19" android:enabled="false" android:label="App 19" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T20" android:enabled="false" android:label="App 20" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T21" android:enabled="false" android:label="App 21" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T22" android:enabled="false" android:label="App 22" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T23" android:enabled="false" android:label="App 23" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+      <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
+    </service>
+    <service android:name=".TileSlots$T24" android:enabled="false" android:label="App 24" android:icon="@drawable/ic_tile" android:exported="true" android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
       <intent-filter><action android:name="android.service.quicksettings.action.QS_TILE" /></intent-filter>
     </service>
   </application>
