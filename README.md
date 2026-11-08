@@ -39,6 +39,24 @@ Support for other v10 builds has not been established.
   <img src="assets/capabilities.svg" alt="Three building blocks: system ADB, native ARM64 preparation, and Quick Settings shortcuts" width="100%" />
 </p>
 
+## Which tool matches my RC 2 firmware?
+
+Use the exact recorded version below to choose a starting point. These entries
+refer to **DJI RC 2 / rc331**; they do not establish support for other remotes or
+unlisted firmware versions. ADB access, system UID and full root are different
+capabilities.
+
+| Recorded firmware / build | Tool or project | Access documented | Compatibility evidence |
+|---|---|---|---|
+| **v10.00.0800 (2026.07.30)**; internal Android build `V14.00.00.04` | [hazim5-stack/OpenKatmai](https://github.com/hazim5-stack/OpenKatmai) | **System ADB, UID 1000**; APK installation, tested ARM64 launch and Quick Settings shortcuts. **No UID 0 root.** | Verified on this project's connected RC 2. See [firmware identity and findings](docs/FINDINGS.md#firmware-identity). |
+| **v02.00.0300** | [Dr-Muh/dji-adb](https://github.com/Dr-Muh/dji-adb) | Direct USB ADB root shell, as reported by its author. | Listed in the upstream [Tested RC2 Firmware Versions](https://github.com/Dr-Muh/dji-adb#tested-rc2-firmware-versions). Not independently verified here on that version; the direct handshake did not work on our v10.00.0800 unit. |
+| **Internal Android build `V00.01.12.50`**; external DJI firmware version not established | [456erddgr/rc2-unlock-toolkit](https://github.com/456erddgr/rc2-unlock-toolkit) | Persistent **UID 0 root ADB**, as reported by its author; its persistence installer requires an existing UID 0 shell. | The upstream [device information](https://github.com/456erddgr/rc2-unlock-toolkit#设备信息) records this build and fingerprint. It is not an established external firmware mapping. Full root through this route has not been established on our v10.00.0800 unit. |
+
+**Version naming:** compare DJI's external firmware version first. Android build
+IDs such as `V14.00.00.04` and `V00.01.12.50` must not be treated as public firmware
+release numbers. OpenKatmai's reuse of the toolkit's clean AOSP `adbd` payload
+does not mean its full-root installation route works on the same firmware.
+
 ## Choose your path
 
 <table>
