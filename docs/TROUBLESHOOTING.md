@@ -1,5 +1,39 @@
 # Troubleshooting
 
+## Camera View stops both USB and TCP ADB
+
+On the recorded RC 2, entering DJI Fly's Camera View force-stopped
+`com.dpad.fuli`. The clean daemon inherited the assistant's memory cgroup
+(`/apps/uid_1000/pid_<assistant-pid>`), so it and a background diagnostic recorder
+were terminated with the assistant even after reparenting to PID 1. `nohup` alone
+did not prevent this process-group cleanup. This was not an ordinary USB grant
+failure: the pre-disconnect USB properties and TCP-port property were unchanged.
+
+The observed fix was moving only the UID 1000 `adbd-r` daemon into its own
+`/dev/memcg/apps/uid_1000/openkatmai-adb` memory cgroup. The existing parent allowed
+UID 1000 to create a child whose `cgroup.procs` was writable by that UID. A cold
+DJI Fly launch reached a live camera feed; the assistant was force-stopped again,
+but the same ADB PID and TCP listener survived the complete 90-second recording.
+This establishes the tested process-group fix, not all future firmware behavior.
+
+With ADB active, install and apply the guarded helper:
+
+```powershell
+adb -s SERIAL push .\scripts\detach-adb.sh /data/data/com.dpad.fuli/detach-adb.sh
+adb -s SERIAL shell chmod 700 /data/data/com.dpad.fuli/detach-adb.sh
+adb -s SERIAL shell sh /data/data/com.dpad.fuli/detach-adb.sh
+adb -s SERIAL push .\scripts\restart.sh /sdcard/Download/restart.sh
+```
+
+Require `ADBD_DETACHED` and verify the daemon's `/proc/<pid>/cgroup` before
+retesting Camera View. The updated restart script calls this helper if installed.
+It does not modify DJI Fly, the boot image, USB functions or system partitions.
+The cgroup is recreated as needed after reboot; ADB still requires the normal
+manual activation. Replacing/deleting the assistant's data can remove the helper.
+The first-activation restoration timer, if active, is a separate cause of exits.
+To discontinue the fix, restore the previous restart script and reboot; do not
+recursively delete cgroup directories or modify other applications' groups.
+
 Start with [First-time setup](SETUP.md) for the Storage/Audio → assistant → Shell
 route, [64-bit apps](64-BIT-APPS.md) for ABI/runtime preparation, and
 [Quick Settings](QUICK-SETTINGS.md) for notification-panel shortcuts.

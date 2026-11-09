@@ -4,6 +4,7 @@ src/*.o
 out/
 build/
 *.apk
+*.apk.idsig
 *.keystore
 *.jks
 src/toolbox/assets/uninstall-helper.jar
