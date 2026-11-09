@@ -13,9 +13,27 @@ FlightTrace is an original Android companion prototype for an external phone con
 - After the recovery fix, the tablet remained in receiving/recording state through 55 samples, with changing battery readings. This short test does not establish long-duration stability.
 - RC GPS and Home Point can be unavailable. Neither is synthesized from the aircraft position or the phone GPS.
 
+## Live map (v0.2.0)
+
+**Live map** opens a full-screen OpenStreetMap view (osmdroid 6.1.20, SHA-256
+pinned in `build.ps1`) with:
+
+- aircraft marker, rotated by the attitude yaw when available;
+- Home Point and RC markers (only when those coordinates are confirmed);
+- the live recorded track as a polyline (all segments, gaps preserved);
+- a status panel: stream freshness, aircraft fix, satellites, GPS signal,
+  battery, flight mode, motors, altitude/speed when the cache exposes them,
+  computed distance-to-home, and track point count;
+- a Follow toggle; the map recenters on the aircraft while it is on.
+
+Tiles are downloaded over HTTPS and cached in app-private storage. No API key
+is used. Fields that the cache does not expose render as `—`; no value is
+synthesized. The bridge reports candidate altitude/distance keys; unavailable
+candidates are listed under `read_errors` in the raw telemetry dialog.
+
 ## Build
 
-Run `./src/flighttrace/build.ps1` on Windows with Android SDK platform/build tools 35, JDK 17 and NDK 28.2.13676358. Paths can be supplied as script parameters. The output is `src/flighttrace/build/FlightTrace.apk`. The phone application contains no native libraries; its bundled helper contains the ARM32 agent required by the tested Fly process. Keep the local signing key private.
+Run `./src/flighttrace/build.ps1` on Windows with Android SDK platform/build tools 35, JDK 17 and NDK 28.2.13676358. Paths can be supplied as script parameters. The output is `src/flighttrace/build/FlightTrace.apk`. The phone application contains no native libraries; its bundled helper contains the ARM32 agent required by the tested Fly process. The osmdroid AAR is downloaded from Maven Central on first build and verified against a pinned SHA-256. Keep the local signing key private.
 
 ## Connect
 

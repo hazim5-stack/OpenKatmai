@@ -33,11 +33,48 @@ try {
  try{& "$bt/aapt.exe" add ../bridge-unsigned.apk lib/armeabi-v7a/libflightbridge.so;Check}finally{Pop-Location}
  Sign build/bridge-unsigned.apk assets/bridge-helper.apk
  if(!$BridgeOnly){
-  & "$bt/aapt.exe" package -f -M AndroidManifest.xml -S res -A assets -I $android -J build/gen -F build/app-unsigned.apk;Check
-  $sources=@(Get-ChildItem app,build/gen -Recurse -Filter *.java | ForEach-Object FullName)
-  & "$j/javac.exe" -encoding UTF-8 --release 8 -classpath $android -d build/app-classes @sources;Check
+  # --- osmdroid map library (pinned, verified) ---
+  $osmVersion='6.1.20'
+  $osmAar="build/deps/osmdroid-android-$osmVersion.aar"
+  $osmSha256='2cbec2a2a1a671a76849897748080079a3158a7a4c8554b86f2c75860f91046a'
+  if(!(Test-Path $osmAar)){
+   Invoke-WebRequest -Uri "https://repo1.maven.org/maven2/org/osmdroid/osmdroid-android/$osmVersion/osmdroid-android-$osmVersion.aar" -OutFile $osmAar
+  }
+  if((Get-FileHash $osmAar -Algorithm SHA256).Hash.ToLower() -ne $osmSha256){throw "osmdroid AAR hash mismatch"}
+  $osmDir="build/deps/osmdroid-$osmVersion"
+  if(!(Test-Path "$osmDir/classes.jar")){
+   New-Item -ItemType Directory -Force $osmDir | Out-Null
+   Expand-Archive -LiteralPath $osmAar -DestinationPath $osmDir -Force
+  }
+  # The AAR ships resource folders at its root; aapt wants them under one -S dir.
+  $osmRes='build/deps/osmdroid-res'
+  if(!(Test-Path $osmRes)){
+   New-Item -ItemType Directory -Force $osmRes | Out-Null
+   Get-ChildItem "$osmDir/res" -Directory | ForEach-Object {Copy-Item -Recurse -LiteralPath $_.FullName -Destination $osmRes}
+  }
+  # aapt1 in build-tools 35 silently uses only the first -S, so merge the app
+  # resources and osmdroid resources into one staging directory first.
+  $resMerged='build/deps/res-merged'
+  if(Test-Path $resMerged){Remove-Item -Recurse -Force $resMerged}
+  New-Item -ItemType Directory -Force $resMerged | Out-Null
+  function Merge-Res($src,$dst){
+   Get-ChildItem $src -Directory | ForEach-Object {
+    $target=Join-Path $dst $_.Name
+    New-Item -ItemType Directory -Force $target | Out-Null
+    Copy-Item -Recurse -Force -Path (Join-Path $_.FullName '*') -Destination $target
+   }
+  }
+  Merge-Res res $resMerged
+  Merge-Res $osmRes $resMerged
+  # Two passes over the SAME merged resource set: consistent IDs, two packages.
+  New-Item -ItemType Directory -Force build/gen,build/gen-lib | Out-Null
+  & "$bt/aapt.exe" package -f -M AndroidManifest.xml -S $resMerged -A assets -I $android -J build/gen -F build/app-unsigned.apk;Check
+  & "$bt/aapt.exe" package -f -M AndroidManifest.xml -S $resMerged -I $android -J build/gen-lib --custom-package org.osmdroid.library -F build/gen-lib/dummy.apk;Check
+  Remove-Item -Force build/gen-lib/dummy.apk
+  $sources=@(Get-ChildItem app,build/gen,build/gen-lib -Recurse -Filter *.java | ForEach-Object FullName)
+  & "$j/javac.exe" -encoding UTF-8 --release 8 -classpath "$android;$osmDir/classes.jar" -d build/app-classes @sources;Check
   & "$j/jar.exe" cf build/app-classes.jar -C build/app-classes .;Check
-  & "$j/java.exe" -cp "$bt/lib/d8.jar" com.android.tools.r8.D8 --lib $android --min-api 26 --output build/app-dex build/app-classes.jar;Check
+  & "$j/java.exe" -cp "$bt/lib/d8.jar" com.android.tools.r8.D8 --lib $android --min-api 26 --output build/app-dex build/app-classes.jar "$osmDir/classes.jar";Check
   Push-Location build/app-dex
   try{& "$bt/aapt.exe" add ../app-unsigned.apk classes.dex;Check}finally{Pop-Location}
   Sign build/app-unsigned.apk build/FlightTrace.apk

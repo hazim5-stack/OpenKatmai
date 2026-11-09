@@ -121,6 +121,12 @@ final class Reader {
         metric(flight,"velocity_raw",f+"getFlightStatus/getVelocity");
         metric(flight,"wind_speed_raw",f+"getFlightStatus/getWindSpeed");
         metric(flight,"wind_warning_level",f+"getFlightStatus/getWindWarningLevel");
+        // Candidate altitude/distance keys for Fly 1.21.8; misses are recorded
+        // under read_errors and never fail the sample.
+        metric(flight,"altitude_a",f+"getAltitude");
+        metric(flight,"altitude_b",f+"getAircraftAltitude");
+        metric(flight,"altitude_c",f+"getAircraftLocation3D");
+        metric(flight,"distance_home",f+"getDistanceToHome");
         aircraft.put("gps",gps).put("battery",battery).put("flight",flight);
         String h="getFlight/getReturnToHome/getReturnToHomeSettings/";
         JSONObject homePos=position(read(h+"getHomeLocation"));

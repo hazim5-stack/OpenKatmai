@@ -31,6 +31,7 @@ public final class MainActivity extends Activity {
         displayPrefs=getSharedPreferences("display",0);
         TextView title=new TextView(this);title.setText("FlightTrace · experimental\nRC 2 telemetry over USB");title.setTextSize(24);title.setTextColor(Color.WHITE);root.addView(title);
         button(root,"Connect USB",v->connect());
+        button(root,"Live map",v->startActivity(new Intent(this,MapActivity.class)));
         if("rc331".equals(Build.DEVICE))button(root,"Local RC diagnostic",v->startServiceMode(new Intent(this,TelemetryService.class).putExtra("mode","local")));
         LinearLayout controls=new LinearLayout(this);root.addView(controls);
         button(controls,"Stop",v->startService(new Intent(this,TelemetryService.class).setAction("STOP")));
